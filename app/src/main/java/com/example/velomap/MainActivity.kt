@@ -10,6 +10,9 @@ import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.style.layers.addLayer
 import com.mapbox.maps.extension.style.layers.generated.fillLayer
+import com.mapbox.maps.extension.style.layers.generated.symbolLayer
+import com.mapbox.maps.extension.style.layers.properties.generated.TextAnchor
+import com.mapbox.maps.extension.style.layers.properties.generated.TextJustify
 import com.mapbox.maps.extension.style.sources.addSource
 import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
 
@@ -54,6 +57,24 @@ class MainActivity : AppCompatActivity() {
                 }
             )
             Log.d("GeoJSON", "слой для отображения полигона")
+
+            // Добавляем SymbolLayer для отображения текста (названий) на полигонах
+            style.addLayer(
+                symbolLayer("polygon-label-layer", "polygon-source") {
+                    textField("{iid}") // Используем значение из поля "iid"
+                    textSize(14.0)
+                    textColor("#000000") // Черный цвет текста
+                    textJustify(TextJustify.CENTER)
+                    textAnchor(TextAnchor.CENTER)
+                    textIgnorePlacement(true) // Игнорируем перекрытие
+                    textAllowOverlap(true)
+
+                    minZoom(13.0) // Минимальный зум, при котором будут видны подписи
+                    //maxZoom(16.0) // Максимальный зум, при котором подписи будут видны
+                }
+            )
+
+            Log.d("GeoJSON", "Слой для отображения названий полигонов добавлен")
         } catch (e: Exception) {
             Log.e("GeoJSON", "Ошибка при загрузке файла: ${e.message}")
         }
