@@ -111,6 +111,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         style.addSource(geoJsonSource)
+        Log.d("GeoJSON", "status "+statuses.toString())
 
         statuses.forEach { (iid, status) ->
             val color = when (status) {

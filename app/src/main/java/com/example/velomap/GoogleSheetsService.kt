@@ -22,7 +22,7 @@ class GoogleSheetsService(private val apiKey: String) {
          Log.d("GeoJson", "response"+response.toString())
 
         return if (response.isSuccessful) {
-            response.body()?.values?.map { it[0] to it[1] } ?: emptyList()
+            response.body()?.values?.map { it[0] to it[5] } ?: emptyList()
         } else {
             emptyList()
         }
