@@ -55,12 +55,16 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     implementation ("com.mapbox.maps:android:10.15.1")
-    implementation("com.google.android.gms:play-services-maps:19.0.0") // Убедитесь, что версия актуальна
+    implementation("com.google.android.gms:play-services-maps:19.0.0")
 
     implementation ("com.google.maps.android:android-maps-utils:2.3.0") // Для работы с GeoJSON
     implementation ("com.google.api-client:google-api-client-android:1.33.0") // Для работы с Google Sheets API
     implementation ("com.google.api-client:google-api-client-gson:1.33.0")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1") // Для фоновых задач
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")// Для ViewModel
+
+    implementation ("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.11.0")
+
 
 }

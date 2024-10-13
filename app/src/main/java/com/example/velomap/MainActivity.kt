@@ -6,8 +6,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
+import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.eq
+import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.get
+import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.literal
 import com.mapbox.maps.extension.style.layers.addLayer
 import com.mapbox.maps.extension.style.layers.generated.fillLayer
 import com.mapbox.maps.extension.style.layers.generated.symbolLayer
@@ -15,10 +19,14 @@ import com.mapbox.maps.extension.style.layers.properties.generated.TextAnchor
 import com.mapbox.maps.extension.style.layers.properties.generated.TextJustify
 import com.mapbox.maps.extension.style.sources.addSource
 import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
+import kotlinx.coroutines.launch
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
     private lateinit var style: Style
+
+    private val googleSheetsService = GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE")
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,18 +36,28 @@ class MainActivity : AppCompatActivity() {
 
         mapView = findViewById(R.id.mapView)
 
-        // Загрузка стиля карты
-        mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) { loadedStyle ->
-            // Сохраняем загруженный стиль в переменную
-            style = loadedStyle
+//        // Загрузка стиля карты
+//        mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) { loadedStyle ->
+//            // Сохраняем загруженный стиль в переменную
+//            style = loadedStyle
+//
+//            // После загрузки стиля вызываем метод для отображения GeoJSON полигонов
+//            loadGeoJson(style)
+//        }
+        mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) { style ->
+            lifecycleScope.launch {
+                val statuses = googleSheetsService.fetchStatuses() // Получаем данные из Google Sheets
+                val geoJsonString = assets.open("polygons.geojson").bufferedReader().use { it.readText() }
 
-            // После загрузки стиля вызываем метод для отображения GeoJSON полигонов
-            loadGeoJson(style)
+                applyPolygonColors(geoJsonString, statuses, style) // Раскрашиваем полигоны
+            }
         }
     }
+
     private fun loadGeoJson(style: Style) {
         try {
-            val geoJsonString = assets.open("polygons.geojson").bufferedReader().use { it.readText() }
+            val geoJsonString =
+                assets.open("polygons.geojson").bufferedReader().use { it.readText() }
             Log.d("GeoJSON", "Файл успешно загружен")
 
             val geoJsonSource = geoJsonSource("polygon-source") {
@@ -78,9 +96,38 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Log.e("GeoJSON", "Ошибка при загрузке файла: ${e.message}")
         }
-        // Создаем GeoJsonSource
-
     }
+
+    private fun applyPolygonColors(
+        geoJson: String,
+        statuses: List<Pair<String, String>>,
+        style: Style
+    ) {
+        val geoJsonSource = geoJsonSource("polygon-source") {
+            data(geoJson)
+        }
+
+        style.addSource(geoJsonSource)
+
+        statuses.forEach { (iid, status) ->
+            val color = when (status) {
+                "1" -> "#00FF00" // Зеленый
+                "принято" -> "#0000FF" // Голубой
+                "не снято" -> "#FF0000" // Красный
+                else -> "#800080" // Фиолетовый
+            }
+
+            style.addLayer(
+                fillLayer("polygon-layer-$iid", "polygon-source") {
+                    filter(eq(get("iid"), literal(iid))) // Фильтруем по 'iid'
+                    fillColor(color) // Устанавливаем цвет
+                    fillOpacity(0.5)
+                }
+            )
+        }
+    }
+
+
     override fun onStart() {
         super.onStart()
         mapView.onStart()
