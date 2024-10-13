@@ -14,6 +14,7 @@ import com.mapbox.maps.extension.style.expressions.generated.Expression.Companio
 import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.literal
 import com.mapbox.maps.extension.style.layers.addLayer
 import com.mapbox.maps.extension.style.layers.generated.fillLayer
+import com.mapbox.maps.extension.style.layers.generated.lineLayer
 import com.mapbox.maps.extension.style.layers.generated.symbolLayer
 import com.mapbox.maps.extension.style.layers.properties.generated.TextAnchor
 import com.mapbox.maps.extension.style.layers.properties.generated.TextJustify
@@ -47,7 +48,9 @@ class MainActivity : AppCompatActivity() {
         mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) { style ->
             lifecycleScope.launch {
                 val statuses = googleSheetsService.fetchStatuses() // Получаем данные из Google Sheets
-                val geoJsonString = assets.open("polygons.geojson").bufferedReader().use { it.readText() }
+                val geoJsonString = assets.open("polygons.geojson")
+                    .bufferedReader()
+                    .use { it.readText() }
 
                 applyPolygonColors(geoJsonString, statuses, style) // Раскрашиваем полигоны
             }
@@ -124,7 +127,31 @@ class MainActivity : AppCompatActivity() {
                     fillOpacity(0.5)
                 }
             )
+
+            style.addLayer(
+                lineLayer("polygon-outline-layer-$iid", "polygon-source") {
+                    filter(eq(get("iid"), literal(iid))) // Фильтруем по 'iid'
+                    lineColor("#000000") // Черный цвет обводки
+                    lineWidth(1.0) // Ширина линии обводки
+                    minZoom(10.0)
+                }
+            )
+
         }
+        style.addLayer(
+            symbolLayer("polygon-label-layer", "polygon-source") {
+                textField("{iid}") // Используем значение из поля "iid"
+                textSize(14.0)
+                textColor("#000000") // Черный цвет текста
+                textJustify(TextJustify.CENTER)
+                textAnchor(TextAnchor.CENTER)
+                textIgnorePlacement(true) // Игнорируем перекрытие
+                textAllowOverlap(true)
+
+                minZoom(13.0) // Минимальный зум, при котором будут видны подписи
+                //maxZoom(16.0) // Максимальный зум, при котором подписи будут видны
+            }
+        )
     }
 
 
