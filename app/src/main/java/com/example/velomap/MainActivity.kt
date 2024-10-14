@@ -1,9 +1,12 @@
 package com.example.velomap
 
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -21,6 +24,15 @@ import com.mapbox.maps.extension.style.layers.properties.generated.TextJustify
 import com.mapbox.maps.extension.style.sources.addSource
 import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
 import kotlinx.coroutines.launch
+import android.Manifest
+import android.widget.Button
+import com.google.android.gms.maps.model.LatLng
+import com.mapbox.maps.CameraOptions
+import com.mapbox.maps.plugin.animation.flyTo
+import com.mapbox.maps.plugin.locationcomponent.location
+import com.mapbox.maps.plugin.locationcomponent.*
+import com.mapbox.geojson.Point
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -37,14 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         mapView = findViewById(R.id.mapView)
 
-//        // Загрузка стиля карты
-//        mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) { loadedStyle ->
-//            // Сохраняем загруженный стиль в переменную
-//            style = loadedStyle
-//
-//            // После загрузки стиля вызываем метод для отображения GeoJSON полигонов
-//            loadGeoJson(style)
-//        }
+
         mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) { style ->
             lifecycleScope.launch {
                 val statuses = googleSheetsService.fetchStatuses() // Получаем данные из Google Sheets
@@ -55,51 +60,50 @@ class MainActivity : AppCompatActivity() {
                 applyPolygonColors(geoJsonString, statuses, style) // Раскрашиваем полигоны
             }
         }
+        findViewById<Button>(R.id.location_button).setOnClickListener {
+            val locationComponent = mapView.location
+            locationComponent.addOnIndicatorPositionChangedListener(object : OnIndicatorPositionChangedListener {
+                override fun onIndicatorPositionChanged(point: Point) {
+                    // Как только местоположение получено, центрируем карту
+                    mapView.getMapboxMap().setCamera(CameraOptions.Builder()
+                        .center(point) // Устанавливаем центр карты на текущее местоположение
+                        .zoom(14.0)    // Устанавливаем зум
+                        .build())
+
+                    // Убираем слушатель, чтобы отслеживание не продолжалось после первого получения позиции
+                    locationComponent.removeOnIndicatorPositionChangedListener(this)
+                }
+            })
+        }
+
     }
 
-    private fun loadGeoJson(style: Style) {
-        try {
-            val geoJsonString =
-                assets.open("polygons.geojson").bufferedReader().use { it.readText() }
-            Log.d("GeoJSON", "Файл успешно загружен")
+    private val LOCATION_PERMISSION_REQUEST_CODE = 1000
 
-            val geoJsonSource = geoJsonSource("polygon-source") {
-                data(geoJsonString)
-            }
+    private fun checkLocationPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
 
-            // Добавляем источник на карту
-            style.addSource(geoJsonSource)
-
-            // Добавляем слой для отображения полигона
-            style.addLayer(
-                fillLayer("polygon-layer", "polygon-source") {
-                    fillColor("#ff0000") // Цвет полигона
-                    fillOpacity(0.5)    // Прозрачность полигона
-                }
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                LOCATION_PERMISSION_REQUEST_CODE
             )
-            Log.d("GeoJSON", "слой для отображения полигона")
-
-            // Добавляем SymbolLayer для отображения текста (названий) на полигонах
-            style.addLayer(
-                symbolLayer("polygon-label-layer", "polygon-source") {
-                    textField("{iid}") // Используем значение из поля "iid"
-                    textSize(14.0)
-                    textColor("#000000") // Черный цвет текста
-                    textJustify(TextJustify.CENTER)
-                    textAnchor(TextAnchor.CENTER)
-                    textIgnorePlacement(true) // Игнорируем перекрытие
-                    textAllowOverlap(true)
-
-                    minZoom(13.0) // Минимальный зум, при котором будут видны подписи
-                    //maxZoom(16.0) // Максимальный зум, при котором подписи будут видны
-                }
-            )
-
-            Log.d("GeoJSON", "Слой для отображения названий полигонов добавлен")
-        } catch (e: Exception) {
-            Log.e("GeoJSON", "Ошибка при загрузке файла: ${e.message}")
+        } else {
+            enableLocationComponent()
         }
     }
+
+    private fun enableLocationComponent() {
+        val locationComponentPlugin = mapView.location // Получаем доступ к компоненту локации
+        locationComponentPlugin.updateSettings {
+            enabled = true
+            pulsingEnabled = true // Включаем пульсирующий индикатор локации
+        }
+    }
+
+
+
 
     private fun applyPolygonColors(
         geoJson: String,
@@ -116,7 +120,7 @@ class MainActivity : AppCompatActivity() {
         statuses.forEach { (iid, status) ->
             val color = when (status) {
                 "1" -> "#00FF00" // Зеленый
-                "принято" -> "#0000FF" // Голубой
+                "Принято" -> "#0000FF" // Голубой
                 "не снято" -> "#FF0000" // Красный
                 else -> "#800080" // Фиолетовый
             }
@@ -154,6 +158,15 @@ class MainActivity : AppCompatActivity() {
             }
         )
     }
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            enableLocationComponent()
+        }
+    }
+
 
 
     override fun onStart() {

@@ -56,6 +56,7 @@ dependencies {
 
     implementation ("com.mapbox.maps:android:10.15.1")
     implementation("com.google.android.gms:play-services-maps:19.0.0")
+    implementation ("com.mapbox.maps:plugin-locationcomponent:10.10.0")
 
     implementation ("com.google.maps.android:android-maps-utils:2.3.0") // Для работы с GeoJSON
     implementation ("com.google.api-client:google-api-client-android:1.33.0") // Для работы с Google Sheets API
@@ -65,6 +66,7 @@ dependencies {
 
     implementation ("com.squareup.retrofit2:retrofit:2.11.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.11.0")
+
 
 
 }

@@ -12,5 +12,12 @@
         app:mapbox_cameraZoom="9.0"
         app:mapbox_cameraPitch="0.0"
         app:mapbox_cameraBearing="0.0" />
+    <Button
+        android:id="@+id/location_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Мое местоположение"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"/>
 
 </FrameLayout>
