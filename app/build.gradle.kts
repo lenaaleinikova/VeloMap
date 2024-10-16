@@ -54,9 +54,12 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    implementation ("com.mapbox.maps:android:10.15.1")
-    implementation("com.google.android.gms:play-services-maps:19.0.0")
-    implementation ("com.mapbox.maps:plugin-locationcomponent:10.10.0")
+    implementation("com.mapbox.maps:android:11.7.1")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+//    implementation("com.google.android.gms:play-services-maps:19.0.0")
+//    implementation ("com.mapbox.maps:plugin-locationcomponent:10.10.0")
+//    implementation ("com.mapbox.mapboxsdk:mapbox-android-core:6.1.0")
+//    implementation("com.mapbox.maps:plugin-gestures:10.0.0")
 
     implementation ("com.google.maps.android:android-maps-utils:2.3.0") // Для работы с GeoJSON
     implementation ("com.google.api-client:google-api-client-android:1.33.0") // Для работы с Google Sheets API

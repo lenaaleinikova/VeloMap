@@ -11,7 +11,12 @@
         app:mapbox_cameraTargetLng="37.6"
         app:mapbox_cameraZoom="9.0"
         app:mapbox_cameraPitch="0.0"
-        app:mapbox_cameraBearing="0.0" />
+        app:mapbox_cameraBearing="0.0"
+        app:mapbox_locationComponentEnabled="true"
+        app:mapbox_locationComponentPuckBearing="heading"
+        android:padding="4dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginBottom="4dp"/>
     <Button
         android:id="@+id/location_button"
         android:layout_width="wrap_content"

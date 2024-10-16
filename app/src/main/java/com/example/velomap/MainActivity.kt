@@ -25,14 +25,21 @@ import com.mapbox.maps.extension.style.sources.addSource
 import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
 import kotlinx.coroutines.launch
 import android.Manifest
-import android.widget.Button
-import com.google.android.gms.maps.model.LatLng
-import com.mapbox.maps.CameraOptions
-import com.mapbox.maps.plugin.animation.flyTo
+import android.annotation.SuppressLint
+import com.mapbox.android.core.permissions.PermissionsListener
+import com.mapbox.android.core.permissions.PermissionsManager
+
 import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.maps.plugin.locationcomponent.*
-import com.mapbox.geojson.Point
+import com.mapbox.maps.plugin.locationcomponent.LocationComponentPlugin
 
+import android.widget.Toast
+import com.mapbox.geojson.Point
+import com.mapbox.maps.CameraOptions
+import com.mapbox.maps.ImageHolder
+import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.interpolate
+import com.mapbox.maps.plugin.LocationPuck2D
+import com.mapbox.maps.plugin.PuckBearing
 
 
 class MainActivity : AppCompatActivity() {
@@ -40,6 +47,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var style: Style
 
     private val googleSheetsService = GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE")
+    private val LOCATION_PERMISSION_REQUEST_CODE = 100
+
+//    private lateinit var mapboxMap: MapboxMap
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,50 +71,63 @@ class MainActivity : AppCompatActivity() {
                 applyPolygonColors(geoJsonString, statuses, style) // Раскрашиваем полигоны
             }
         }
-        findViewById<Button>(R.id.location_button).setOnClickListener {
-            val locationComponent = mapView.location
-            locationComponent.addOnIndicatorPositionChangedListener(object : OnIndicatorPositionChangedListener {
-                override fun onIndicatorPositionChanged(point: Point) {
-                    // Как только местоположение получено, центрируем карту
-                    mapView.getMapboxMap().setCamera(CameraOptions.Builder()
-                        .center(point) // Устанавливаем центр карты на текущее местоположение
-                        .zoom(14.0)    // Устанавливаем зум
-                        .build())
 
-                    // Убираем слушатель, чтобы отслеживание не продолжалось после первого получения позиции
-                    locationComponent.removeOnIndicatorPositionChangedListener(this)
-                }
-            })
-        }
+
+        enableLocationComponent()
 
     }
-
-    private val LOCATION_PERMISSION_REQUEST_CODE = 1000
-
-    private fun checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED) {
-
+    // Method to enable the location component and display user location
+    private fun enableLocationComponent() {
+        // Check for location permissions
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED) {
+            initLocationComponent()
+        } else {
+            // Request location permission
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 LOCATION_PERMISSION_REQUEST_CODE
             )
-        } else {
-            enableLocationComponent()
         }
     }
+    // Initialize the location component
 
-    private fun enableLocationComponent() {
-        val locationComponentPlugin = mapView.location // Получаем доступ к компоненту локации
+
+    private fun initLocationComponent() {
+        val locationComponentPlugin = mapView.location
         locationComponentPlugin.updateSettings {
+            puckBearing = PuckBearing.COURSE
+            puckBearingEnabled = true
             enabled = true
-            pulsingEnabled = true // Включаем пульсирующий индикатор локации
+            locationPuck = LocationPuck2D(
+                bearingImage = ImageHolder.from(R.drawable.ic_launcher_foreground),
+                shadowImage = ImageHolder.from(R.drawable.ic_launcher_foreground),
+                scaleExpression = interpolate {
+                    linear()
+                    zoom()
+                    stop(0.0, 0.6)
+                    stop(20.0, 1.0)
+                }.toJson()
+            )
         }
+//        locationComponentPlugin.addOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
     }
 
 
-
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            initLocationComponent()
+        } else {
+            Toast.makeText(this, "Location permission not granted", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     private fun applyPolygonColors(
         geoJson: String,
@@ -158,16 +182,6 @@ class MainActivity : AppCompatActivity() {
             }
         )
     }
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            enableLocationComponent()
-        }
-    }
-
-
 
     override fun onStart() {
         super.onStart()
