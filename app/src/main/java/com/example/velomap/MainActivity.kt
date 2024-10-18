@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.mapbox.maps.ImageHolder
 import com.mapbox.maps.MapView
@@ -25,23 +26,30 @@ class MainActivity : AppCompatActivity() {
     private val googleSheetsService = GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE")
     private val LOCATION_PERMISSION_REQUEST_CODE = 100
 
+    lateinit var viewModel: MainViewModel
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
         mapView = findViewById(R.id.mapView)
 
-
         mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) { style ->
-            lifecycleScope.launch {
-                val statuses = googleSheetsService.fetchStatuses() // Получаем данные из Google Sheets
+
+            viewModel.statuses.observe(this) { statuses ->
                 val geoJsonString = assets.open("polygons.geojson")
                     .bufferedReader()
                     .use { it.readText() }
 
                 PolygonColorUtils.applyPolygonColors(geoJsonString, statuses, style)
+            }
+
+            // Начинаем загрузку статусов
+            lifecycleScope.launch {
+                viewModel.fetchStatuses(googleSheetsService)
             }
         }
         enableLocationComponent()
