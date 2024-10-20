@@ -3,6 +3,7 @@ package com.example.velomap
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.widget.Button
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -10,12 +11,15 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.mapbox.geojson.Point
+import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.ImageHolder
 import com.mapbox.maps.MapView
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.interpolate
 import com.mapbox.maps.plugin.LocationPuck2D
 import com.mapbox.maps.plugin.PuckBearing
+import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
 import com.mapbox.maps.plugin.locationcomponent.location
 import kotlinx.coroutines.launch
 
@@ -54,6 +58,27 @@ class MainActivity : AppCompatActivity() {
         }
         enableLocationComponent()
 
+        findViewById<Button>(R.id.location_button).setOnClickListener {
+            // Получаем плагин для работы с локацией
+            val locationComponentPlugin = mapView.location
+
+            // Слушатель для отслеживания изменений местоположения
+            locationComponentPlugin.addOnIndicatorPositionChangedListener(object :
+                OnIndicatorPositionChangedListener {
+                override fun onIndicatorPositionChanged(point: Point) {
+                    // Как только местоположение обновится, установим позицию камеры
+                    mapView.getMapboxMap().setCamera(
+                        CameraOptions.Builder()
+                            .center(point) // Устанавливаем центр карты на текущее местоположение
+                            .zoom(14.0) // Задаем уровень зума
+                            .build()
+                    )
+
+                    // Убираем слушатель, чтобы не отслеживать местоположение постоянно
+                    locationComponentPlugin.removeOnIndicatorPositionChangedListener(this)
+                }
+            })
+        }
     }
 
     // Method to enable the location component and display user location
@@ -92,7 +117,6 @@ class MainActivity : AppCompatActivity() {
         }
 //        locationComponentPlugin.addOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
     }
-
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
