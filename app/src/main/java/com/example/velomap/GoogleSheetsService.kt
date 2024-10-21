@@ -27,4 +27,26 @@ class GoogleSheetsService(private val apiKey: String) {
             emptyList()
         }
     }
+
+    suspend fun fetchInfo(): List<PolygonInfo> {
+        val response = googleSheetsApi.getSheetData(
+            "1GuzQu1G3MXVc9K9WQu3qXG2W6gys8XP6mkWgeMRGP18",
+            "Вело-опер 2024 III часть!D2:K", // Диапазон ячеек со всеми необходимыми полями
+            apiKey
+        )
+        Log.d("GeoJson", "response: ${response.toString()}")
+
+        return if (response.isSuccessful) {
+            response.body()?.values?.map {
+                PolygonInfo(
+                    id = it[0],
+                    status = it[5],
+                    operator = it[7]
+                )
+            } ?: emptyList()
+        } else {
+            emptyList()
+        }
+    }
+
 }

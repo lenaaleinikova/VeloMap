@@ -10,11 +10,19 @@ class MainViewModel : ViewModel() {
     private val _statuses = MutableLiveData<List<Pair<String, String>>>()
     val statuses: LiveData<List<Pair<String, String>>> get() = _statuses
 
-    // Метод для загрузки статусов из Google Sheets
+    private val _polygonInfo = MutableLiveData<List<PolygonInfo>>()
+    val polygonInfo: LiveData<List<PolygonInfo>> get()= _polygonInfo
+
     suspend fun fetchStatuses(googleSheetsService: GoogleSheetsService) {
         val result = withContext(Dispatchers.IO) {
             googleSheetsService.fetchStatuses()
         }
         _statuses.value = result
+    }
+    suspend fun fetchPolygonInfo(googleSheetsService: GoogleSheetsService) {
+        val result = withContext(Dispatchers.IO) {
+            googleSheetsService.fetchInfo()
+        }
+        _polygonInfo.value = result
     }
 }
