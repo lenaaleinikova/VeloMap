@@ -18,7 +18,8 @@ import com.mapbox.maps.extension.style.sources.generated.geoJsonSource
 object PolygonColorUtils {
     fun applyPolygonColors(
         geoJson: String,
-        statuses: List<Pair<String, String>>,
+//        statuses: List<Pair<String, String>>,
+        statuses: List<PolygonInfo>,
         style: Style
     ): List<String> { // Теперь возвращаем список названий слоев
         val geoJsonSource = geoJsonSource("polygon-source") {
@@ -29,7 +30,10 @@ object PolygonColorUtils {
 
         val layerIds = mutableListOf<String>() // Список для хранения названий слоев
 
-        statuses.forEach { (iid, status) ->
+        statuses.forEach { polygonInfo ->
+            val iid = polygonInfo.id
+            val status = polygonInfo.status
+
             val color = when (status) {
                 "1" -> "#00FF00" // Зеленый
                 "Принято" -> "#0000FF" // Голубой

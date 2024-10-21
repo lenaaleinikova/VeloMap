@@ -48,17 +48,16 @@ class MainActivity : AppCompatActivity() {
 
         mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) { style ->
 
-            viewModel.statuses.observe(this) { statuses ->
+            viewModel.polygonInfo.observe(this) { polygonsInfo ->
                 val geoJsonString = assets.open("polygons.geojson")
                     .bufferedReader()
                     .use { it.readText() }
 
-                layerIds = PolygonColorUtils.applyPolygonColors(geoJsonString, statuses, style)
-
+                layerIds = PolygonColorUtils.applyPolygonColors(geoJsonString, polygonsInfo, style)
 
             }
             lifecycleScope.launch {
-                viewModel.fetchStatuses(googleSheetsService)
+                viewModel.fetchPolygonInfo(googleSheetsService)
             }
         }
 
@@ -112,7 +111,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Method to enable the location component and display user location
+
     private fun enableLocationComponent() {
         // Check for location permissions
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
@@ -146,7 +145,6 @@ class MainActivity : AppCompatActivity() {
                 }.toJson()
             )
         }
-//        locationComponentPlugin.addOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener)
     }
 
     override fun onRequestPermissionsResult(
