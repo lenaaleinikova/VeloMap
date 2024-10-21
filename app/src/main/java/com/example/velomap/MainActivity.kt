@@ -3,6 +3,7 @@ package com.example.velomap
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -15,10 +16,13 @@ import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.ImageHolder
 import com.mapbox.maps.MapView
+import com.mapbox.maps.RenderedQueryGeometry
+import com.mapbox.maps.RenderedQueryOptions
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.interpolate
 import com.mapbox.maps.plugin.LocationPuck2D
 import com.mapbox.maps.plugin.PuckBearing
+import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
 import com.mapbox.maps.plugin.locationcomponent.location
 import kotlinx.coroutines.launch
@@ -26,6 +30,7 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
+    private lateinit var layerIds:List<String>
 
     private val googleSheetsService = GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE")
     private val LOCATION_PERMISSION_REQUEST_CODE = 100
@@ -48,33 +53,59 @@ class MainActivity : AppCompatActivity() {
                     .bufferedReader()
                     .use { it.readText() }
 
-                PolygonColorUtils.applyPolygonColors(geoJsonString, statuses, style)
-            }
+                layerIds = PolygonColorUtils.applyPolygonColors(geoJsonString, statuses, style)
 
-            // Начинаем загрузку статусов
+
+            }
             lifecycleScope.launch {
                 viewModel.fetchStatuses(googleSheetsService)
             }
         }
+
+        mapView.getMapboxMap().addOnMapClickListener { point ->
+            val screenPoint = mapView.getMapboxMap().pixelForCoordinate(point)
+            val queryGeometry = RenderedQueryGeometry(screenPoint)
+
+            // Используем список названий слоев для запроса
+            val queryOptions = RenderedQueryOptions(layerIds, null)
+            Log.d("GeoJSON", queryOptions.toString())
+
+            mapView.getMapboxMap().queryRenderedFeatures(
+                queryGeometry, queryOptions
+            ) { features ->
+                if (features.value?.isNotEmpty() == true) {
+                    val queriedFeature = features.value?.firstOrNull()
+                    Log.d("GeoJSON", queriedFeature.toString())
+                    queriedFeature?.let {
+                        val properties = it.queriedFeature.feature.properties()
+                        Log.d("GeoJSON", properties.toString())
+                        val iid = properties?.get("iid") ?: "Неизвестный"
+                        Log.d("GeoJSON", iid.toString())
+                        Toast.makeText(this, "Полигон: $iid", Toast.LENGTH_LONG).show()
+                    }
+                } else {
+                    Toast.makeText(this, "Полигон не найден", Toast.LENGTH_SHORT).show()
+                }
+            }
+            true
+        }
+
         enableLocationComponent()
 
         findViewById<Button>(R.id.location_button).setOnClickListener {
-            // Получаем плагин для работы с локацией
+
             val locationComponentPlugin = mapView.location
 
-            // Слушатель для отслеживания изменений местоположения
             locationComponentPlugin.addOnIndicatorPositionChangedListener(object :
                 OnIndicatorPositionChangedListener {
                 override fun onIndicatorPositionChanged(point: Point) {
-                    // Как только местоположение обновится, установим позицию камеры
                     mapView.getMapboxMap().setCamera(
                         CameraOptions.Builder()
-                            .center(point) // Устанавливаем центр карты на текущее местоположение
-                            .zoom(14.0) // Задаем уровень зума
+                            .center(point)
+                            .zoom(14.0)
                             .build()
                     )
 
-                    // Убираем слушатель, чтобы не отслеживать местоположение постоянно
                     locationComponentPlugin.removeOnIndicatorPositionChangedListener(this)
                 }
             })

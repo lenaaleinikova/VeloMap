@@ -20,12 +20,14 @@ object PolygonColorUtils {
         geoJson: String,
         statuses: List<Pair<String, String>>,
         style: Style
-    ) {
+    ): List<String> { // Теперь возвращаем список названий слоев
         val geoJsonSource = geoJsonSource("polygon-source") {
             data(geoJson)
         }
 
         style.addSource(geoJsonSource)
+
+        val layerIds = mutableListOf<String>() // Список для хранения названий слоев
 
         statuses.forEach { (iid, status) ->
             val color = when (status) {
@@ -35,13 +37,15 @@ object PolygonColorUtils {
                 else -> "#800080" // Фиолетовый
             }
 
+            val fillLayerId = "polygon-layer-$iid"
             style.addLayer(
-                fillLayer("polygon-layer-$iid", "polygon-source") {
+                fillLayer(fillLayerId, "polygon-source") {
                     filter(eq(get("iid"), literal(iid))) // Фильтруем по 'iid'
                     fillColor(color) // Устанавливаем цвет
                     fillOpacity(0.5)
                 }
             )
+            layerIds.add(fillLayerId) // Сохраняем ID слоя в список
 
             style.addLayer(
                 lineLayer("polygon-outline-layer-$iid", "polygon-source") {
@@ -64,5 +68,7 @@ object PolygonColorUtils {
                 minZoom(13.0)
             }
         )
+
+        return layerIds // Возвращаем список названий слоев
     }
 }
