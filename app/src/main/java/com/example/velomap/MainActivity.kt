@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     private val LOCATION_PERMISSION_REQUEST_CODE = 100
 
     lateinit var viewModel: MainViewModel
-
+    private val polygonInfoMap = mutableMapOf<String, PolygonInfo>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,6 +55,10 @@ class MainActivity : AppCompatActivity() {
 
                 layerIds = PolygonColorUtils.applyPolygonColors(geoJsonString, polygonsInfo, style)
 
+                polygonsInfo.forEach { info ->
+                    polygonInfoMap[info.id] = info
+                }
+
             }
             lifecycleScope.launch {
                 viewModel.fetchPolygonInfo(googleSheetsService)
@@ -67,20 +71,30 @@ class MainActivity : AppCompatActivity() {
 
             // Используем список названий слоев для запроса
             val queryOptions = RenderedQueryOptions(layerIds, null)
-            Log.d("GeoJSON", queryOptions.toString())
-
             mapView.getMapboxMap().queryRenderedFeatures(
                 queryGeometry, queryOptions
             ) { features ->
                 if (features.value?.isNotEmpty() == true) {
                     val queriedFeature = features.value?.firstOrNull()
-                    Log.d("GeoJSON", queriedFeature.toString())
                     queriedFeature?.let {
                         val properties = it.queriedFeature.feature.properties()
-                        Log.d("GeoJSON", properties.toString())
-                        val iid = properties?.get("iid") ?: "Неизвестный"
-                        Log.d("GeoJSON", iid.toString())
-                        Toast.makeText(this, "Полигон: $iid", Toast.LENGTH_LONG).show()
+                        val iid = properties?.get("iid")
+                            ?.asString
+                            ?.replace("\"", "")
+                            ?.trim() ?: "Неизвестный"
+                        val polygonInfo = polygonInfoMap[iid]
+                        Log.d("GeoJSON", polygonInfoMap.toString())
+                        Log.d("GeoJSON", polygonInfo.toString())
+                        if (polygonInfo != null) {
+                            // Выводим полную информацию о полигоне
+                            Toast.makeText(
+                                this,
+                                "ID: ${polygonInfo.id}, Статус: ${polygonInfo.status}, Оператор: ${polygonInfo.operator}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        } else {
+                            Toast.makeText(this, "Информация о полигоне не найдена", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 } else {
                     Toast.makeText(this, "Полигон не найден", Toast.LENGTH_SHORT).show()
