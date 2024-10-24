@@ -87,11 +87,8 @@ class MainActivity : AppCompatActivity() {
                         Log.d("GeoJSON", polygonInfo.toString())
                         if (polygonInfo != null) {
                             // Выводим полную информацию о полигоне
-                            Toast.makeText(
-                                this,
-                                "ID: ${polygonInfo.id}, Статус: ${polygonInfo.status}, Оператор: ${polygonInfo.operator}",
-                                Toast.LENGTH_LONG
-                            ).show()
+                            val dialog = PolygonInfoDialogFragment.newInstance(polygonInfo)
+                            dialog.show(supportFragmentManager, "PolygonInfoDialog")
                         } else {
                             Toast.makeText(this, "Информация о полигоне не найдена", Toast.LENGTH_SHORT).show()
                         }
