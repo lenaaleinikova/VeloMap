@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">VeloMap</string>
+    <string-array name="status_options">
+        <item>1</item>
+        <item>не снято</item>
+        <item>принято</item>
+    </string-array>
+
 </resources>

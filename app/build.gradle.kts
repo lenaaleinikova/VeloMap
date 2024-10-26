@@ -62,7 +62,17 @@ dependencies {
 //    implementation("com.mapbox.maps:plugin-gestures:10.0.0")
 
     implementation ("com.google.maps.android:android-maps-utils:2.3.0") // Для работы с GeoJSON
+
     implementation ("com.google.api-client:google-api-client-android:1.33.0") // Для работы с Google Sheets API
+//    implementation("com.google.apis:google-api-services-sheets:v4-rev614-1.25.0")
+    implementation("com.google.api-client:google-api-client:2.0.0")
+    implementation("com.google.apis:google-api-services-sheets:v4-rev20220927-2.0.0") // Последняя версия на момент написания
+    implementation("com.google.api-client:google-api-client-gson:1.33.0") // Парсер Gson для Google API Client
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0") // Версия может быть другой
+
+
+
+
     implementation ("com.google.api-client:google-api-client-gson:1.33.0")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1") // Для фоновых задач
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")// Для ViewModel
