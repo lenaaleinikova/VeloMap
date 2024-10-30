@@ -13,6 +13,9 @@ class MainViewModel : ViewModel() {
     private val _polygonInfo = MutableLiveData<List<PolygonInfo>>()
     val polygonInfo: LiveData<List<PolygonInfo>> get()= _polygonInfo
 
+    private val _polygonInfoMap = mutableMapOf<String, PolygonInfo>()
+    val polygonInfoMap: Map<String, PolygonInfo> get() = _polygonInfoMap
+
     suspend fun fetchStatuses(googleSheetsService: GoogleSheetsService) {
         val result = withContext(Dispatchers.IO) {
             googleSheetsService.fetchStatuses()
@@ -25,4 +28,9 @@ class MainViewModel : ViewModel() {
         }
         _polygonInfo.value = result
     }
+//    fun getPolygonCoordinates(polygonId: String): Pair<Double, Double>? {
+//        val polygonInfo = _polygonInfoMap[polygonId]
+//        return polygonInfo?.let { Pair(it.longitude, it.latitude) }
+//    }
+
 }

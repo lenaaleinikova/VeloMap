@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -31,6 +32,7 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
     private lateinit var layerIds:List<String>
+    private lateinit var polygonsList: List<PolygonData>
 
     private val googleSheetsService = GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE", this)
     private val LOCATION_PERMISSION_REQUEST_CODE = 100
@@ -45,6 +47,11 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
         mapView = findViewById(R.id.mapView)
+        findViewById<Button>(R.id.search_button).setOnClickListener {
+            setupSearchButton()
+//            val polygonId = findViewById<EditText>(R.id.polygon_id_input).text.toString()
+//            searchPolygon(polygonId)
+        }
 
         mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) { style ->
 
@@ -52,6 +59,7 @@ class MainActivity : AppCompatActivity() {
                 val geoJsonString = assets.open("polygons.geojson")
                     .bufferedReader()
                     .use { it.readText() }
+                polygonsList = parseGeoJson(geoJsonString)
 
                 layerIds = PolygonColorUtils.applyPolygonColors(geoJsonString, polygonsInfo, style)
 
@@ -157,6 +165,45 @@ class MainActivity : AppCompatActivity() {
             )
         }
     }
+    private fun setupSearchButton() {
+        val searchButton = findViewById<Button>(R.id.search_button) // ID вашей кнопки поиска
+        val searchInput = findViewById<EditText>(R.id.polygon_id_input) // ID поля ввода
+
+        searchButton.setOnClickListener {
+            val polygonId = searchInput.text.toString().trim() // Получаем введенный ID
+
+            // Ищем полигон по ID
+            val polygonData = polygonsList.find { it.id == polygonId } // Здесь polygonsList - ваш список из parseGeoJson
+            if (polygonData != null) {
+                val centroid = polygonData.centroid // Получаем центроид
+
+                // Зуммируем к центроиду
+                mapView.getMapboxMap().setCamera(
+                    CameraOptions.Builder()
+                        .center(centroid)
+                        .zoom(14.0) // Уровень зума, можете изменить по необходимости
+                        .build()
+                )
+            } else {
+                Toast.makeText(this, "Полигон с ID $polygonId не найден", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+//    private fun searchPolygon(polygonId: String) {
+//        val polygonInfo = polygonInfoMap[polygonId]
+//        if (polygonInfo != null) {
+//            // Перемещение камеры к найденному полигону
+//            val point = Point.fromLngLat(polygonInfo.longitude, polygonInfo.latitude)
+//            mapView.getMapboxMap().setCamera(
+//                CameraOptions.Builder()
+//                    .center(point)
+//                    .zoom(14.0)
+//                    .build()
+//            )
+//        } else {
+//            Toast.makeText(this, "Полигон не найден", Toast.LENGTH_SHORT).show()
+//        }
+//    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
