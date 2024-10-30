@@ -14,16 +14,31 @@ import retrofit2.converter.gson.GsonConverterFactory
 import com.google.api.services.sheets.v4.model.ValueRange
 
 
-class GoogleSheetsService(private val apiKey: String) {
+class GoogleSheetsService(private val apiKey: String, context: Context) {
 
     private val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl("https://sheets.googleapis.com/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-
-
     private val googleSheetsApi: GoogleSheetsApi = retrofit.create(GoogleSheetsApi::class.java)
+    private val sheetsService: Sheets by lazy { getSheetsService(context) }
+
+    private fun getSheetsService(context: Context): Sheets {
+        val credentials = GoogleAccountCredential.usingOAuth2(
+            // Переопределите при необходимости, если нужно использовать другой контекст.
+            context,
+            listOf(SheetsScopes.SPREADSHEETS)
+        )
+
+        return Sheets.Builder(
+            NetHttpTransport(),
+            GsonFactory.getDefaultInstance(),
+            credentials
+        )
+            .setApplicationName("Your App Name") // Название вашего приложения
+            .build()
+    }
 
     suspend fun fetchStatuses(): List<Pair<String, String>> {
         val response = googleSheetsApi.getSheetData(
@@ -68,15 +83,42 @@ class GoogleSheetsService(private val apiKey: String) {
 
         // 2. Находим индекс строки для polygonId
         val rowIndex = polygons.indexOfFirst { it.id == polygonId }
-        Log.d("GeoJson", rowIndex.toString())
+        Log.d("PolygonInfoDialog", rowIndex.toString())
         if (rowIndex == -1) throw IllegalArgumentException("Полигон не найден в таблице")
 
         // 3. Отправляем запрос на обновление конкретной ячейки, учитывая строку
-        val cellRange = "Вело-опер 2024 III часть!I$rowIndex" // предположим, что статус находится в колонке C
+        val cellRange = "Вело-опер 2024 III часть!I${rowIndex + 2}"
+        Log.d("PolygonInfoDialog", cellRange)
         val body = ValueRange().setValues(listOf(listOf(newStatus)))
-//        googleSheetsApi.updateSheetValue(spreadsheetId, cellRange, body, apiKey)
+//        Log.d("PolygonInfoDialog", cellRange)
+        googleSheetsApi.updateSheetValue(spreadsheetId, cellRange, body, apiKey)
 
 
     }
+    suspend fun testUpdateCell() {
+        val spreadsheetId = "1GuzQu1G3MXVc9K9WQu3qXG2W6gys8XP6mkWgeMRGP18"
+        val cellRange = "Вело-опер 2024 III часть!I25" // Задайте конкретную ячейку для теста
+        val body = ValueRange().setValues(listOf(listOf("тестовое значение")))
+
+
+
+        try {
+            googleSheetsApi.updateSheetValue(spreadsheetId, cellRange, body, apiKey)
+            Log.d("PolygonInfoDialog", "Обновляем статус на: $body")
+            val response = googleSheetsApi.updateSheetValue(spreadsheetId, cellRange, body, apiKey)
+            Log.d("PolygonInfoDialog", "Ответ от API: $response")
+
+            val updateRequest = sheetsService.spreadsheets().values().update(spreadsheetId, cellRange, body)
+            updateRequest.setValueInputOption("RAW")
+            val response2 = updateRequest.execute()
+            Log.d("PolygonInfoDialog", "Обновлено ${response2.updatedCells} ячеек.")
+
+
+            Log.d("PolygonInfoDialog", "Запись успешно обновлена.")
+        } catch (e: Exception) {
+            Log.e("PolygonInfoDialog", "Ошибка обновления записи", e)
+        }
+    }
+
 
 }

@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
     private lateinit var layerIds:List<String>
 
-    private val googleSheetsService = GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE")
+    private val googleSheetsService = GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE", this)
     private val LOCATION_PERMISSION_REQUEST_CODE = 100
 
     lateinit var viewModel: MainViewModel

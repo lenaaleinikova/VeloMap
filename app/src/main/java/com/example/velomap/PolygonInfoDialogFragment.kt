@@ -28,6 +28,8 @@ class PolygonInfoDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // Инициализация googleSheetsService
+        googleSheetsService = GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE", requireContext())
 
         val polygonId = arguments?.getString("id")
         val polygonStatus = arguments?.getString("status")
@@ -65,7 +67,8 @@ class PolygonInfoDialogFragment : DialogFragment() {
         lifecycleScope.launch {
             try {
                 // Используем Google Sheets service для обновления статуса
-                googleSheetsService.updateStatus(polygonId, newStatus)
+//                googleSheetsService.updateStatus(polygonId, newStatus)
+                googleSheetsService.testUpdateCell()
                 Toast.makeText(requireContext(), "Статус успешно обновлен", Toast.LENGTH_SHORT).show()
                 dismiss()
             } catch (e: Exception) {
@@ -74,5 +77,6 @@ class PolygonInfoDialogFragment : DialogFragment() {
             }
         }
     }
+
 
 }
