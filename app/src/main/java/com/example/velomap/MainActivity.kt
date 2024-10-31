@@ -59,7 +59,10 @@ class MainActivity : AppCompatActivity() {
                 val geoJsonString = assets.open("polygons.geojson")
                     .bufferedReader()
                     .use { it.readText() }
-                polygonsList = parseGeoJson(geoJsonString)
+                lifecycleScope.launch {
+                    polygonsList = parseGeoJson(geoJsonString)
+                }
+
 
                 layerIds = PolygonColorUtils.applyPolygonColors(geoJsonString, polygonsInfo, style)
 
@@ -171,6 +174,8 @@ class MainActivity : AppCompatActivity() {
 
         searchButton.setOnClickListener {
             val polygonId = searchInput.text.toString().trim() // Получаем введенный ID
+            Log.d("Search", polygonId)
+            Log.d("Search", polygonsList.toString())
 
             // Ищем полигон по ID
             val polygonData = polygonsList.find { it.id == polygonId } // Здесь polygonsList - ваш список из parseGeoJson
@@ -181,7 +186,7 @@ class MainActivity : AppCompatActivity() {
                 mapView.getMapboxMap().setCamera(
                     CameraOptions.Builder()
                         .center(centroid)
-                        .zoom(14.0) // Уровень зума, можете изменить по необходимости
+                        .zoom(16.0) // Уровень зума, можете изменить по необходимости
                         .build()
                 )
             } else {
@@ -189,21 +194,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-//    private fun searchPolygon(polygonId: String) {
-//        val polygonInfo = polygonInfoMap[polygonId]
-//        if (polygonInfo != null) {
-//            // Перемещение камеры к найденному полигону
-//            val point = Point.fromLngLat(polygonInfo.longitude, polygonInfo.latitude)
-//            mapView.getMapboxMap().setCamera(
-//                CameraOptions.Builder()
-//                    .center(point)
-//                    .zoom(14.0)
-//                    .build()
-//            )
-//        } else {
-//            Toast.makeText(this, "Полигон не найден", Toast.LENGTH_SHORT).show()
-//        }
-//    }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
