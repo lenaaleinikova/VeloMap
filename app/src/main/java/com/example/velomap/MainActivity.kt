@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -113,7 +114,7 @@ class MainActivity : AppCompatActivity() {
 
         enableLocationComponent()
 
-        findViewById<Button>(R.id.location_button).setOnClickListener {
+        findViewById<ImageButton>(R.id.location_button).setOnClickListener {
 
             val locationComponentPlugin = mapView.location
 
@@ -157,8 +158,8 @@ class MainActivity : AppCompatActivity() {
             puckBearingEnabled = true
             enabled = true
             locationPuck = LocationPuck2D(
-                bearingImage = ImageHolder.from(R.drawable.ic_launcher_foreground),
-                shadowImage = ImageHolder.from(R.drawable.ic_launcher_foreground),
+                bearingImage = ImageHolder.from(R.drawable.circle_red),
+                shadowImage = ImageHolder.from(R.drawable.triangle_1),
                 scaleExpression = interpolate {
                     linear()
                     zoom()
