@@ -7,16 +7,16 @@
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="25dp"
+        android:layout_marginBottom="4dp"
+        android:padding="4dp"
+        app:mapbox_cameraBearing="0.0"
+        app:mapbox_cameraPitch="0.0"
         app:mapbox_cameraTargetLat="55.7"
         app:mapbox_cameraTargetLng="37.6"
         app:mapbox_cameraZoom="9.0"
-        app:mapbox_cameraPitch="0.0"
-        app:mapbox_cameraBearing="0.0"
         app:mapbox_locationComponentEnabled="true"
-        app:mapbox_locationComponentPuckBearing="heading"
-        android:padding="4dp"
-        android:layout_marginTop="25dp"
-        android:layout_marginBottom="4dp"/>
+        app:mapbox_locationComponentPuckBearing="heading" />
 
     <ImageButton
         android:id="@+id/location_button"
@@ -24,31 +24,58 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="52dp"
         android:background="@drawable/background_circle"
         android:contentDescription="null"
-        android:src="@drawable/location"
-        android:layout_marginBottom="52dp"
-        android:layout_marginEnd="16dp"
-        />
-    <EditText
-        android:id="@+id/polygon_id_input"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:hint="Введите ID полигона"
-        android:layout_gravity="top|end"
-        android:layout_margin="36dp"
-        android:padding="8dp"
-        android:textColor="@android:color/background_light"
-        android:textColorHint="@android:color/background_light"
-        android:background="@android:color/holo_purple" />
+        android:src="@drawable/location" />
 
-    <Button
-        android:id="@+id/search_button"
+    <!--    <EditText-->
+    <!--        android:id="@+id/polygon_id_input"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_gravity="top|end"-->
+    <!--        android:layout_margin="36dp"-->
+    <!--        android:background="@android:color/holo_purple"-->
+    <!--        android:hint="Введите ID полигона"-->
+    <!--        android:padding="8dp"-->
+    <!--        android:textColor="@android:color/background_light"-->
+    <!--        android:textColorHint="@android:color/background_light" />-->
+
+    <!--    <Button-->
+    <!--        android:id="@+id/search_button"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_gravity="top|end"-->
+    <!--        android:layout_marginTop="68dp"-->
+    <!--        android:layout_marginEnd="16dp"-->
+    <!--        android:text="Поиск" />-->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Поиск"
-        android:layout_gravity="top|end"
-        android:layout_marginTop="68dp"
-        android:layout_marginEnd="16dp"/>
+        android:layout_margin="10dp"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/polygon_id_input"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="5"
+            android:background="@android:color/holo_purple"
+            android:hint="Введите ID полигона"
+            android:padding="8dp"
+            android:textColor="@android:color/background_light"
+            android:textColorHint="@android:color/background_light" />
+
+        <ImageButton
+            android:id="@+id/search_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_weight="1"
+            android:src="@drawable/magnifier"
+            android:text="" />
+    </LinearLayout>
 
 </FrameLayout>

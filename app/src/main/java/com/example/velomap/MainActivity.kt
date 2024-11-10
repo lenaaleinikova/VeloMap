@@ -170,7 +170,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     private fun setupSearchButton() {
-        val searchButton = findViewById<Button>(R.id.search_button) // ID вашей кнопки поиска
+        val searchButton = findViewById<ImageButton>(R.id.search_button) // ID вашей кнопки поиска
         val searchInput = findViewById<EditText>(R.id.polygon_id_input) // ID поля ввода
 
         searchButton.setOnClickListener {
