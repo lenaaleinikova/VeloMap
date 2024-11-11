@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
         mapView = findViewById(R.id.mapView)
-        findViewById<Button>(R.id.search_button).setOnClickListener {
+        findViewById<ImageButton>(R.id.search_button).setOnClickListener {
             setupSearchButton()
 //            val polygonId = findViewById<EditText>(R.id.polygon_id_input).text.toString()
 //            searchPolygon(polygonId)
