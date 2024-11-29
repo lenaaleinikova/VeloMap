@@ -1,6 +1,6 @@
 package com.example.velomap
 
-import android.Manifest
+
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -9,8 +9,7 @@ import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
+
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.velomap.data.PolygonData
@@ -18,14 +17,11 @@ import com.example.velomap.data.PolygonInfo
 import com.example.velomap.network.GoogleSheetsService
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
-import com.mapbox.maps.ImageHolder
+
 import com.mapbox.maps.MapView
 import com.mapbox.maps.RenderedQueryGeometry
 import com.mapbox.maps.RenderedQueryOptions
-import com.mapbox.maps.Style
-import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.interpolate
-import com.mapbox.maps.plugin.LocationPuck2D
-import com.mapbox.maps.plugin.PuckBearing
+
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
 import com.mapbox.maps.plugin.locationcomponent.location
@@ -34,13 +30,14 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
-    private lateinit var layerIds:List<String>
+    private lateinit var layerIds: List<String>
     private lateinit var polygonsList: List<PolygonData>
 
     private lateinit var viewModel: MainViewModel
     private lateinit var mapManager: MapManager
 
-    private val googleSheetsService = GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE", this)
+    private val googleSheetsService =
+        GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE", this)
     private val LOCATION_PERMISSION_REQUEST_CODE = 100
 
 
@@ -52,12 +49,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         mapView = findViewById(R.id.mapView)
 
-        val repository = PolygonRepository(GoogleSheetsService("API_KEY", this))
+        val repository =
+            PolygonRepository(GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE", this))
         viewModel = ViewModelProvider(this, ViewModelFactory(repository))[MainViewModel::class.java]
         mapManager = MapManager(mapView, this)
 
         Log.d("Mainload", "load")
-//        Log.d("Mainload", "0 ${viewModel.polygonInfo.value.toString()}")
 
         observeViewModel()
         viewModel.fetchPolygonInfo()
@@ -66,9 +63,6 @@ class MainActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.search_button).setOnClickListener {
             setupSearchButton()
         }
-
-//
-
 
         MapUtils.enableLocationComponent(this, mapView)
 
@@ -98,7 +92,8 @@ class MainActivity : AppCompatActivity() {
         viewModel.polygonInfo.observe(this) { result ->
             Log.d("Mainload", "result ${result.toString()}")
             result.onSuccess { polygons ->
-                val geoJsonString = assets.open("polygons.geojson").bufferedReader().use { it.readText() }
+                val geoJsonString =
+                    assets.open("polygons.geojson").bufferedReader().use { it.readText() }
 //                Log.d("Mainload", "2 $geoJsonString")
                 Log.d("Mainload", "polygons $polygons")
                 lifecycleScope.launch {
@@ -144,7 +139,11 @@ class MainActivity : AppCompatActivity() {
                             val dialog = PolygonInfoDialogFragment.newInstance(polygonInfo)
                             dialog.show(supportFragmentManager, "PolygonInfoDialog")
                         } else {
-                            Toast.makeText(this, "Информация о полигоне не найдена", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this,
+                                "Информация о полигоне не найдена",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 } else {
@@ -191,7 +190,8 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() &&
-            grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
+        ) {
             MapUtils.initLocationComponent(mapView)
         } else {
             Toast.makeText(this, "Location permission not granted", Toast.LENGTH_SHORT).show()

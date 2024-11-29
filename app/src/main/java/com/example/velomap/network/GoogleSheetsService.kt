@@ -11,6 +11,8 @@ import com.google.api.services.sheets.v4.SheetsScopes
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.google.api.services.sheets.v4.model.ValueRange
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 
 class GoogleSheetsService(private val apiKey: String, context: Context) {
@@ -44,7 +46,7 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
             "Вело-опер 2024 III часть!D2:I", // Диапазон ячеек со столбцами "16_id3" и "1_Статусы / 1=снято_"
             apiKey
         )
-         Log.d("GeoJson", "response"+response.toString())
+        Log.d("GeoJson", "response" + response.toString())
 
         return if (response.isSuccessful) {
             response.body()?.values?.map { it[0] to it[5] } ?: emptyList()
@@ -58,7 +60,7 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
         val response = googleSheetsApi.getSheetData(
             "1GuzQu1G3MXVc9K9WQu3qXG2W6gys8XP6mkWgeMRGP18",
             "Вело-опер 2024 III часть!D2:K",
-            apiKeyHash
+            apiKey
         )
 
         Log.d("GeoJson", "response: ${response.toString()}")
@@ -76,6 +78,7 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
             emptyList()
         }
     }
+
     suspend fun updateStatus(polygonId: String, newStatus: String) {
         val spreadsheetId = "1GuzQu1G3MXVc9K9WQu3qXG2W6gys8XP6mkWgeMRGP18"
         val range = "Вело-опер 2024 III часть!D2:I"
@@ -84,18 +87,19 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
 
 
         val rowIndex = polygons.indexOfFirst { it.id == polygonId }
-        Log.d("PolygonInfoDialog", rowIndex.toString())
+        Log.d("testUpdate", rowIndex.toString())
         if (rowIndex == -1) throw IllegalArgumentException("Полигон не найден в таблице")
 
 
         val cellRange = "Вело-опер 2024 III часть!I${rowIndex + 2}"
-        Log.d("PolygonInfoDialog", cellRange)
+        Log.d("testUpdate", cellRange)
         val body = ValueRange().setValues(listOf(listOf(newStatus)))
 //        Log.d("PolygonInfoDialog", cellRange)
         googleSheetsApi.updateSheetValue(spreadsheetId, cellRange, body, apiKey)
 
 
     }
+
     suspend fun testUpdateCell() {
         val spreadsheetId = "1GuzQu1G3MXVc9K9WQu3qXG2W6gys8XP6mkWgeMRGP18"
         val cellRange = "Вело-опер 2024 III часть!I25"
@@ -104,20 +108,27 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
 
 
         try {
-            googleSheetsApi.updateSheetValue(spreadsheetId, cellRange, body, apiKey)
-            Log.d("PolygonInfoDialog", "Обновляем статус на: $body")
-            val response = googleSheetsApi.updateSheetValue(spreadsheetId, cellRange, body, apiKey)
-            Log.d("PolygonInfoDialog", "Ответ от API: $response")
+            withContext(Dispatchers.IO) {
+//
+                val response =
+                    googleSheetsApi.updateSheetValue(spreadsheetId, cellRange, body, apiKey)
+                Log.d("testUpdate", "Ответ от API: $response")
+                if (response.isSuccessful) Log.d(
+                    "testUpdate",
+                    "Запись успешно обновлена."
+                ) else {
+                    Log.d("testUpdate", response.code().toString())
+                }
 
-            val updateRequest = sheetsService.spreadsheets().values().update(spreadsheetId, cellRange, body)
-            updateRequest.setValueInputOption("RAW")
-            val response2 = updateRequest.execute()
-            Log.d("PolygonInfoDialog", "Обновлено ${response2.updatedCells} ячеек.")
 
-
-            Log.d("PolygonInfoDialog", "Запись успешно обновлена.")
+//                val updateRequest =
+//                    sheetsService.spreadsheets().values().update(spreadsheetId, cellRange, body)
+//                updateRequest.setValueInputOption("RAW")
+//                val response2 = updateRequest.execute()
+//                Log.d("testUpdate", "Обновлено ${response2.updatedCells} ячеек.")
+            }
         } catch (e: Exception) {
-            Log.e("PolygonInfoDialog", "Ошибка обновления записи", e)
+            Log.e("testUpdate", "Ошибка обновления записи", e)
         }
     }
 
