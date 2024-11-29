@@ -1,11 +1,10 @@
-package com.example.velomap
+package com.example.velomap.network
 
 import android.content.Context
 import android.util.Log
+import com.example.velomap.data.PolygonInfo
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
-import com.google.api.client.http.HttpTransport
 import com.google.api.client.http.javanet.NetHttpTransport
-import com.google.api.client.json.JsonFactory
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
@@ -26,7 +25,6 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
 
     private fun getSheetsService(context: Context): Sheets {
         val credentials = GoogleAccountCredential.usingOAuth2(
-            // Переопределите при необходимости, если нужно использовать другой контекст.
             context,
             listOf(SheetsScopes.SPREADSHEETS)
         )
@@ -36,7 +34,7 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
             GsonFactory.getDefaultInstance(),
             credentials
         )
-            .setApplicationName("Your App Name") // Название вашего приложения
+            .setApplicationName("Your App Name")
             .build()
     }
 
@@ -58,7 +56,7 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
     suspend fun fetchInfo(): List<PolygonInfo> {
         val response = googleSheetsApi.getSheetData(
             "1GuzQu1G3MXVc9K9WQu3qXG2W6gys8XP6mkWgeMRGP18",
-            "Вело-опер 2024 III часть!D2:K", // Диапазон ячеек со всеми необходимыми полями
+            "Вело-опер 2024 III часть!D2:K",
             apiKey
         )
         Log.d("GeoJson", "response: ${response.toString()}")
@@ -77,16 +75,16 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
     }
     suspend fun updateStatus(polygonId: String, newStatus: String) {
         val spreadsheetId = "1GuzQu1G3MXVc9K9WQu3qXG2W6gys8XP6mkWgeMRGP18"
-        val range = "Вело-опер 2024 III часть!D2:I" // настрой в зависимости от структуры таблицы
+        val range = "Вело-опер 2024 III часть!D2:I"
 
-        val polygons = fetchInfo() // используй вспомогательную функцию для получения данных
+        val polygons = fetchInfo()
 
-        // 2. Находим индекс строки для polygonId
+
         val rowIndex = polygons.indexOfFirst { it.id == polygonId }
         Log.d("PolygonInfoDialog", rowIndex.toString())
         if (rowIndex == -1) throw IllegalArgumentException("Полигон не найден в таблице")
 
-        // 3. Отправляем запрос на обновление конкретной ячейки, учитывая строку
+
         val cellRange = "Вело-опер 2024 III часть!I${rowIndex + 2}"
         Log.d("PolygonInfoDialog", cellRange)
         val body = ValueRange().setValues(listOf(listOf(newStatus)))
@@ -97,7 +95,7 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
     }
     suspend fun testUpdateCell() {
         val spreadsheetId = "1GuzQu1G3MXVc9K9WQu3qXG2W6gys8XP6mkWgeMRGP18"
-        val cellRange = "Вело-опер 2024 III часть!I25" // Задайте конкретную ячейку для теста
+        val cellRange = "Вело-опер 2024 III часть!I25"
         val body = ValueRange().setValues(listOf(listOf("тестовое значение")))
 
 

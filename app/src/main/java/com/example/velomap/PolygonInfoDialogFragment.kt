@@ -11,6 +11,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import com.example.velomap.data.PolygonInfo
+import com.example.velomap.network.GoogleSheetsService
 import kotlinx.coroutines.launch
 
 
@@ -28,7 +30,7 @@ class PolygonInfoDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Инициализация googleSheetsService
+
         googleSheetsService = GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE", requireContext())
 
         val polygonId = arguments?.getString("id")
@@ -47,7 +49,7 @@ class PolygonInfoDialogFragment : DialogFragment() {
         }
 
         view.findViewById<Button>(R.id.buttonClose).setOnClickListener {
-            dismiss() // Закрываем диалог по нажатию на кнопку
+            dismiss()
         }
     }
 
@@ -66,7 +68,7 @@ class PolygonInfoDialogFragment : DialogFragment() {
     private fun updatePolygonStatus(polygonId: String, newStatus: String) {
         lifecycleScope.launch {
             try {
-                // Используем Google Sheets service для обновления статуса
+
 //                googleSheetsService.updateStatus(polygonId, newStatus)
                 googleSheetsService.testUpdateCell()
                 Toast.makeText(requireContext(), "Статус успешно обновлен", Toast.LENGTH_SHORT).show()

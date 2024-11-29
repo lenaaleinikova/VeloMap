@@ -3,34 +3,41 @@ package com.example.velomap
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.velomap.data.PolygonInfo
+import com.example.velomap.network.GoogleSheetsService
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MainViewModel : ViewModel() {
-    private val _statuses = MutableLiveData<List<Pair<String, String>>>()
-    val statuses: LiveData<List<Pair<String, String>>> get() = _statuses
+class MainViewModel(private val repository: PolygonRepository) : ViewModel() {
 
-    private val _polygonInfo = MutableLiveData<List<PolygonInfo>>()
-    val polygonInfo: LiveData<List<PolygonInfo>> get()= _polygonInfo
+    private val _statuses = MutableLiveData<Result<List<Pair<String, String>>>>()
+    val statuses: LiveData<Result<List<Pair<String, String>>>> get() = _statuses
 
-    private val _polygonInfoMap = mutableMapOf<String, PolygonInfo>()
-    val polygonInfoMap: Map<String, PolygonInfo> get() = _polygonInfoMap
+    private val _polygonInfo = MutableLiveData<Result<List<PolygonInfo>>>()
+    val polygonInfo: LiveData<Result<List<PolygonInfo>>> get() = _polygonInfo
 
-    suspend fun fetchStatuses(googleSheetsService: GoogleSheetsService) {
-        val result = withContext(Dispatchers.IO) {
-            googleSheetsService.fetchStatuses()
+    fun fetchStatuses() {
+        viewModelScope.launch {
+            try {
+                val result = repository.getStatuses()
+                _statuses.postValue(Result.success(result))
+            } catch (e: Exception) {
+                _statuses.postValue(Result.failure(e))
+            }
         }
-        _statuses.value = result
     }
-    suspend fun fetchPolygonInfo(googleSheetsService: GoogleSheetsService) {
-        val result = withContext(Dispatchers.IO) {
-            googleSheetsService.fetchInfo()
-        }
-        _polygonInfo.value = result
-    }
-//    fun getPolygonCoordinates(polygonId: String): Pair<Double, Double>? {
-//        val polygonInfo = _polygonInfoMap[polygonId]
-//        return polygonInfo?.let { Pair(it.longitude, it.latitude) }
-//    }
 
+    fun fetchPolygonInfo() {
+        viewModelScope.launch {
+            try {
+                val result = repository.getPolygonInfo()
+                _polygonInfo.postValue(Result.success(result))
+            } catch (e: Exception) {
+                _polygonInfo.postValue(Result.failure(e))
+            }
+        }
+    }
 }
+

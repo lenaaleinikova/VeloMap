@@ -1,6 +1,7 @@
 package com.example.velomap
 
 
+import com.example.velomap.data.PolygonInfo
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.eq
 import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.get
@@ -28,51 +29,51 @@ object PolygonColorUtils {
 
         style.addSource(geoJsonSource)
 
-        val layerIds = mutableListOf<String>() // Список для хранения названий слоев
+        val layerIds = mutableListOf<String>()
 
         statuses.forEach { polygonInfo ->
             val iid = polygonInfo.id
             val status = polygonInfo.status
 
             val color = when (status) {
-                "1" -> "#00FF00" // Зеленый
-                "Принято" -> "#0000FF" // Голубой
-                "не снято" -> "#FF0000" // Красный
-                else -> "#800080" // Фиолетовый
+                "1" -> "#00FF00"
+                "Принято" -> "#0000FF"
+                "не снято" -> "#FF0000"
+                else -> "#800080"
             }
 
             val fillLayerId = "polygon-layer-$iid"
             style.addLayer(
                 fillLayer(fillLayerId, "polygon-source") {
-                    filter(eq(get("iid"), literal(iid))) // Фильтруем по 'iid'
-                    fillColor(color) // Устанавливаем цвет
+                    filter(eq(get("iid"), literal(iid)))
+                    fillColor(color)
                     fillOpacity(0.5)
                 }
             )
-            layerIds.add(fillLayerId) // Сохраняем ID слоя в список
+            layerIds.add(fillLayerId)
 
             style.addLayer(
                 lineLayer("polygon-outline-layer-$iid", "polygon-source") {
-                    filter(eq(get("iid"), literal(iid))) // Фильтруем по 'iid'
-                    lineColor("#000000") // Черный цвет обводки
-                    lineWidth(1.0) // Ширина линии обводки
+                    filter(eq(get("iid"), literal(iid)))
+                    lineColor("#000000")
+                    lineWidth(1.0)
                 }
             )
         }
 
         style.addLayer(
             symbolLayer("polygon-label-layer", "polygon-source") {
-                textField("{iid}") // Используем значение из поля "iid"
+                textField("{iid}")
                 textSize(14.0)
-                textColor("#000000") // Черный цвет текста
+                textColor("#000000")
                 textJustify(TextJustify.CENTER)
                 textAnchor(TextAnchor.CENTER)
-                textIgnorePlacement(true) // Игнорируем перекрытие
+                textIgnorePlacement(true)
                 textAllowOverlap(true)
                 minZoom(13.0)
             }
         )
 
-        return layerIds // Возвращаем список названий слоев
+        return layerIds
     }
 }

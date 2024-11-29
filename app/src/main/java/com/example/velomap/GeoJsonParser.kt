@@ -1,6 +1,7 @@
 package com.example.velomap
 
 import android.util.Log
+import com.example.velomap.data.PolygonData
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.MultiPolygon
 import com.mapbox.geojson.Point
@@ -8,10 +9,10 @@ import com.mapbox.geojson.Polygon
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-// Ваша функция для парсинга GeoJSON
+
 suspend fun parseGeoJson(geoJsonString: String): List<PolygonData> = withContext(Dispatchers.IO){
     val featureCollection = FeatureCollection.fromJson(geoJsonString)
-    val polygons = mutableListOf<PolygonData>() // Список для хранения данных о полигонах
+    val polygons = mutableListOf<PolygonData>()
 
     featureCollection.features()?.forEach { feature ->
         val geometry = feature.geometry()
@@ -22,7 +23,7 @@ suspend fun parseGeoJson(geoJsonString: String): List<PolygonData> = withContext
 
         when (geometry) {
             is Polygon -> {
-                // Работаем с обычным полигоном
+
                 val coordinates = geometry.coordinates()
                 val centroid = calculateCentroid(coordinates)
                 val polygonData = PolygonData(
@@ -32,11 +33,11 @@ suspend fun parseGeoJson(geoJsonString: String): List<PolygonData> = withContext
                 polygons.add(polygonData)
             }
             is MultiPolygon -> {
-                // Работаем с мультиполигоном
+
                 val allPolygonsCentroids = geometry.coordinates().map { polygonCoords ->
-                    calculateCentroid(polygonCoords) // Вычисляем центроид для каждого полигона в мультиполигоне
+                    calculateCentroid(polygonCoords)
                 }
-                // Вычисляем общий центроид для мультиполигона (например, усреднение всех центроидов)
+
                 val avgLongitude = allPolygonsCentroids.map { it.longitude() }.average()
                 val avgLatitude = allPolygonsCentroids.map { it.latitude() }.average()
                 val centroid = Point.fromLngLat(avgLongitude, avgLatitude)
@@ -56,7 +57,7 @@ suspend fun parseGeoJson(geoJsonString: String): List<PolygonData> = withContext
     polygons
 }
 
-// Функция для вычисления центроида
+
 private fun calculateCentroid(coordinates: List<List<Point>>): Point {
     var totalLongitude = 0.0
     var totalLatitude = 0.0
