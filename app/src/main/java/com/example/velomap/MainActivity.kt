@@ -67,37 +67,10 @@ class MainActivity : AppCompatActivity() {
             setupSearchButton()
         }
 
-//        mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) { style ->
 //
-//            viewModel.polygonInfo.observe(this) { result ->
-//                result.onSuccess { polygonsInfo ->
-//                    val geoJsonString = assets.open("polygons.geojson")
-//                        .bufferedReader()
-//                        .use { it.readText() }
-//                    Log.d("Mainload", "1 $geoJsonString")
-//                    lifecycleScope.launch {
-//                        polygonsList = parseGeoJson(geoJsonString)
-//                        setupMapInteractions(layerIds, polygonsInfo)
-//                    }
-//                    Log.d("Mainload", "polygonsList $polygonsList.toString()")
-//
-//                    layerIds = PolygonColorUtils.applyPolygonColors(geoJsonString, polygonsInfo, style)
-////                    Log.d("Mainload", layerIds.toString())
-//                    polygonsInfo.forEach { info ->
-//                        polygonInfoMap[info.id] = info
-//                    }
-//                }
-//
-//                result.onFailure {
-//                    Toast.makeText(this, "Failed to load polygon info", Toast.LENGTH_SHORT).show()
-//                }
-//            }
-//        }
-
 
 
         MapUtils.enableLocationComponent(this, mapView)
-//        enableLocationComponent()
 
         findViewById<ImageButton>(R.id.location_button).setOnClickListener {
 
@@ -128,6 +101,9 @@ class MainActivity : AppCompatActivity() {
                 val geoJsonString = assets.open("polygons.geojson").bufferedReader().use { it.readText() }
 //                Log.d("Mainload", "2 $geoJsonString")
                 Log.d("Mainload", "polygons $polygons")
+                lifecycleScope.launch {
+                    polygonsList = parseGeoJson(geoJsonString)
+                }
                 val layerIds = mapManager.loadStyle(polygons, geoJsonString)
                 Log.d("Mainload", "layerIds $layerIds")
                 setupMapInteractions(layerIds, polygons)
