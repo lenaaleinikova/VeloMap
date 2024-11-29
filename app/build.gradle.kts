@@ -38,7 +38,7 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             merges += "META-INF/LICENSE.md"
             merges += "META-INF/LICENSE-notice.md"
-            excludes += "META-INF/DEPENDENCIES" // Исключаем файл DEPENDENCIES
+            excludes += "META-INF/DEPENDENCIES"
         }
     }
 }
@@ -55,30 +55,30 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     implementation("com.mapbox.maps:android:11.7.1")
-    implementation("com.google.android.gms:play-services-location:21.0.1")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 //    implementation("com.google.android.gms:play-services-maps:19.0.0")
 //    implementation ("com.mapbox.maps:plugin-locationcomponent:10.10.0")
 //    implementation ("com.mapbox.mapboxsdk:mapbox-android-core:6.1.0")
 //    implementation("com.mapbox.maps:plugin-gestures:10.0.0")
 
-    implementation ("com.google.maps.android:android-maps-utils:2.3.0") // Для работы с GeoJSON
+    implementation ("com.google.maps.android:android-maps-utils:2.3.0")
 
-    implementation ("com.google.api-client:google-api-client-android:1.33.0") // Для работы с Google Sheets API
+    implementation ("com.google.api-client:google-api-client-android:1.33.0")
 //    implementation("com.google.apis:google-api-services-sheets:v4-rev614-1.25.0")
-    implementation("com.google.api-client:google-api-client:2.0.0")
-    implementation("com.google.apis:google-api-services-sheets:v4-rev20220927-2.0.0") // Последняя версия на момент написания
-    implementation("com.google.api-client:google-api-client-gson:1.33.0") // Парсер Gson для Google API Client
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.0") // Версия может быть другой
+    implementation(libs.google.api.client)
+    implementation(libs.google.api.services.sheets)
+    implementation(libs.google.api.client.gson)
+    implementation(libs.jackson.databind)
 
 
 
 
-    implementation ("com.google.api-client:google-api-client-gson:1.33.0")
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1") // Для фоновых задач
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")// Для ViewModel
+    implementation (libs.google.api.client.gson)
+    implementation (libs.kotlinx.coroutines.core)
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
 
-    implementation ("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
 
 
 
