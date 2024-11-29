@@ -54,12 +54,15 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
     }
 
     suspend fun fetchInfo(): List<PolygonInfo> {
+        val apiKeyHash = "AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE"
         val response = googleSheetsApi.getSheetData(
             "1GuzQu1G3MXVc9K9WQu3qXG2W6gys8XP6mkWgeMRGP18",
             "Вело-опер 2024 III часть!D2:K",
-            apiKey
+            apiKeyHash
         )
+
         Log.d("GeoJson", "response: ${response.toString()}")
+        Log.d("GeoJson", "response1: ${response.body()?.values}")
 
         return if (response.isSuccessful) {
             response.body()?.values?.map {
