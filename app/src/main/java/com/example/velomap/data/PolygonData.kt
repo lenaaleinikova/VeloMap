@@ -1,4 +1,4 @@
-package com.example.velomap
+package com.example.velomap.data
 
 import com.mapbox.geojson.Point
 

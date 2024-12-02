@@ -11,6 +11,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import com.example.velomap.data.PolygonInfo
+import com.example.velomap.network.GoogleSheetsService
 import kotlinx.coroutines.launch
 
 
@@ -28,8 +30,9 @@ class PolygonInfoDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Инициализация googleSheetsService
-        googleSheetsService = GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE", requireContext())
+
+        googleSheetsService =
+            GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE", requireContext())
 
         val polygonId = arguments?.getString("id")
         val polygonStatus = arguments?.getString("status")
@@ -41,13 +44,18 @@ class PolygonInfoDialogFragment : DialogFragment() {
 
         val statusSpinner = view.findViewById<Spinner>(R.id.status_spinner)
         val updateBottom = view.findViewById<Button>(R.id.update_button)
-        updateBottom.setOnClickListener{
+        updateBottom.setOnClickListener {
             val selectedStatus = statusSpinner.selectedItem.toString()
-            updatePolygonStatus(polygonId.toString(), selectedStatus)
+            try {
+                updatePolygonStatus(polygonId.toString(), selectedStatus)
+            } catch (e: Exception){
+                Log.d("Dialog", e.toString())
+            }
+
         }
 
         view.findViewById<Button>(R.id.buttonClose).setOnClickListener {
-            dismiss() // Закрываем диалог по нажатию на кнопку
+            dismiss()
         }
     }
 
@@ -63,17 +71,20 @@ class PolygonInfoDialogFragment : DialogFragment() {
             return fragment
         }
     }
+
     private fun updatePolygonStatus(polygonId: String, newStatus: String) {
         lifecycleScope.launch {
             try {
-                // Используем Google Sheets service для обновления статуса
+
 //                googleSheetsService.updateStatus(polygonId, newStatus)
                 googleSheetsService.testUpdateCell()
-                Toast.makeText(requireContext(), "Статус успешно обновлен", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Статус успешно обновлен", Toast.LENGTH_SHORT)
+                    .show()
                 dismiss()
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Не удалось обновить статус", Toast.LENGTH_SHORT).show()
-                Log.e("PolygonInfoDialog", "Ошибка обновления статуса", e)
+                Toast.makeText(requireContext(), "Не удалось обновить статус", Toast.LENGTH_SHORT)
+                    .show()
+                Log.e("Dialog", "Ошибка обновления статуса", e)
             }
         }
     }

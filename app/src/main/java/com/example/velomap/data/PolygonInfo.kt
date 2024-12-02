@@ -1,4 +1,4 @@
-package com.example.velomap
+package com.example.velomap.data
 
 data class PolygonInfo(
     val id: String,

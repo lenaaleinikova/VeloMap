@@ -1,29 +1,27 @@
 package com.example.velomap
 
-import android.Manifest
+
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
+
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.example.velomap.data.PolygonData
+import com.example.velomap.data.PolygonInfo
+import com.example.velomap.network.GoogleSheetsService
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
-import com.mapbox.maps.ImageHolder
+
 import com.mapbox.maps.MapView
 import com.mapbox.maps.RenderedQueryGeometry
 import com.mapbox.maps.RenderedQueryOptions
-import com.mapbox.maps.Style
-import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.interpolate
-import com.mapbox.maps.plugin.LocationPuck2D
-import com.mapbox.maps.plugin.PuckBearing
+
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
 import com.mapbox.maps.plugin.locationcomponent.location
@@ -32,87 +30,41 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
-    private lateinit var layerIds:List<String>
+    private lateinit var layerIds: List<String>
     private lateinit var polygonsList: List<PolygonData>
 
-    private val googleSheetsService = GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE", this)
+    private lateinit var viewModel: MainViewModel
+    private lateinit var mapManager: MapManager
+
+    private val googleSheetsService =
+        GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE", this)
     private val LOCATION_PERMISSION_REQUEST_CODE = 100
 
-    lateinit var viewModel: MainViewModel
+
     private val polygonInfoMap = mutableMapOf<String, PolygonInfo>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
-
         mapView = findViewById(R.id.mapView)
+
+        val repository =
+            PolygonRepository(GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE", this))
+        viewModel = ViewModelProvider(this, ViewModelFactory(repository))[MainViewModel::class.java]
+        mapManager = MapManager(mapView, this)
+
+        Log.d("Mainload", "load")
+
+        observeViewModel()
+        viewModel.fetchPolygonInfo()
+
+
         findViewById<ImageButton>(R.id.search_button).setOnClickListener {
             setupSearchButton()
-//            val polygonId = findViewById<EditText>(R.id.polygon_id_input).text.toString()
-//            searchPolygon(polygonId)
         }
 
-        mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) { style ->
-
-            viewModel.polygonInfo.observe(this) { polygonsInfo ->
-                val geoJsonString = assets.open("polygons.geojson")
-                    .bufferedReader()
-                    .use { it.readText() }
-                lifecycleScope.launch {
-                    polygonsList = parseGeoJson(geoJsonString)
-                }
-
-
-                layerIds = PolygonColorUtils.applyPolygonColors(geoJsonString, polygonsInfo, style)
-
-                polygonsInfo.forEach { info ->
-                    polygonInfoMap[info.id] = info
-                }
-
-            }
-            lifecycleScope.launch {
-                viewModel.fetchPolygonInfo(googleSheetsService)
-            }
-        }
-
-        mapView.getMapboxMap().addOnMapClickListener { point ->
-            val screenPoint = mapView.getMapboxMap().pixelForCoordinate(point)
-            val queryGeometry = RenderedQueryGeometry(screenPoint)
-
-            // Используем список названий слоев для запроса
-            val queryOptions = RenderedQueryOptions(layerIds, null)
-            mapView.getMapboxMap().queryRenderedFeatures(
-                queryGeometry, queryOptions
-            ) { features ->
-                if (features.value?.isNotEmpty() == true) {
-                    val queriedFeature = features.value?.firstOrNull()
-                    queriedFeature?.let {
-                        val properties = it.queriedFeature.feature.properties()
-                        val iid = properties?.get("iid")
-                            ?.asString
-                            ?.replace("\"", "")
-                            ?.trim() ?: "Неизвестный"
-                        val polygonInfo = polygonInfoMap[iid]
-                        Log.d("GeoJSON", polygonInfoMap.toString())
-                        Log.d("GeoJSON", polygonInfo.toString())
-                        if (polygonInfo != null) {
-                            // Выводим полную информацию о полигоне
-                            val dialog = PolygonInfoDialogFragment.newInstance(polygonInfo)
-                            dialog.show(supportFragmentManager, "PolygonInfoDialog")
-                        } else {
-                            Toast.makeText(this, "Информация о полигоне не найдена", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                } else {
-                    Toast.makeText(this, "Полигон не найден", Toast.LENGTH_SHORT).show()
-                }
-            }
-            true
-        }
-
-        enableLocationComponent()
+        MapUtils.enableLocationComponent(this, mapView)
 
         findViewById<ImageButton>(R.id.location_button).setOnClickListener {
 
@@ -135,59 +87,93 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun enableLocationComponent() {
-        // Check for location permissions
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED) {
-            initLocationComponent()
-        } else {
-            // Request location permission
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                LOCATION_PERMISSION_REQUEST_CODE
-            )
+    private fun observeViewModel() {
+        Log.d("Mainload", "observeViewModel")
+        viewModel.polygonInfo.observe(this) { result ->
+            Log.d("Mainload", "result ${result.toString()}")
+            result.onSuccess { polygons ->
+                val geoJsonString =
+                    assets.open("polygons.geojson").bufferedReader().use { it.readText() }
+//                Log.d("Mainload", "2 $geoJsonString")
+                Log.d("Mainload", "polygons $polygons")
+                lifecycleScope.launch {
+                    polygonsList = parseGeoJson(geoJsonString)
+                }
+                val layerIds = mapManager.loadStyle(polygons, geoJsonString)
+                Log.d("Mainload", "layerIds $layerIds")
+                setupMapInteractions(layerIds, polygons)
+            }
+            result.onFailure {
+                Toast.makeText(this, "Failed to load polygon info", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun setupMapInteractions(layerIds: List<String>, polygons: List<PolygonInfo>) {
+
+        mapView.getMapboxMap().addOnMapClickListener { point ->
+
+            val screenPoint = mapView.getMapboxMap().pixelForCoordinate(point)
+            val queryGeometry = RenderedQueryGeometry(screenPoint)
+
+
+            val queryOptions = RenderedQueryOptions(layerIds, null)
+
+
+            mapView.getMapboxMap().queryRenderedFeatures(
+                queryGeometry, queryOptions
+            ) { features ->
+                if (features.value?.isNotEmpty() == true) {
+
+                    val queriedFeature = features.value?.firstOrNull()
+                    queriedFeature?.let {
+
+                        val properties = it.queriedFeature.feature.properties()
+                        val iid = properties?.get("iid")
+                            ?.asString
+                            ?.replace("\"", "")
+                            ?.trim() ?: "Неизвестный"
+
+                        val polygonInfo = polygons.find { polygon -> polygon.id == iid }
+                        if (polygonInfo != null) {
+                            val dialog = PolygonInfoDialogFragment.newInstance(polygonInfo)
+                            dialog.show(supportFragmentManager, "PolygonInfoDialog")
+                        } else {
+                            Toast.makeText(
+                                this,
+                                "Информация о полигоне не найдена",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                } else {
+                    Toast.makeText(this, "Полигон не найден", Toast.LENGTH_SHORT).show()
+                }
+            }
+            true
         }
     }
 
 
-    private fun initLocationComponent() {
-        val locationComponentPlugin = mapView.location
-        locationComponentPlugin.updateSettings {
-            puckBearing = PuckBearing.COURSE
-            puckBearingEnabled = true
-            enabled = true
-            locationPuck = LocationPuck2D(
-                bearingImage = ImageHolder.from(R.drawable.circle_red),
-                shadowImage = ImageHolder.from(R.drawable.triangle_1),
-                scaleExpression = interpolate {
-                    linear()
-                    zoom()
-                    stop(0.0, 0.6)
-                    stop(20.0, 1.0)
-                }.toJson()
-            )
-        }
-    }
     private fun setupSearchButton() {
-        val searchButton = findViewById<ImageButton>(R.id.search_button) // ID вашей кнопки поиска
-        val searchInput = findViewById<EditText>(R.id.polygon_id_input) // ID поля ввода
+        val searchButton = findViewById<ImageButton>(R.id.search_button)
+        val searchInput = findViewById<EditText>(R.id.polygon_id_input)
 
         searchButton.setOnClickListener {
-            val polygonId = searchInput.text.toString().trim() // Получаем введенный ID
+            val polygonId = searchInput.text.toString().trim()
             Log.d("Search", polygonId)
             Log.d("Search", polygonsList.toString())
 
-            // Ищем полигон по ID
-            val polygonData = polygonsList.find { it.id == polygonId } // Здесь polygonsList - ваш список из parseGeoJson
-            if (polygonData != null) {
-                val centroid = polygonData.centroid // Получаем центроид
 
-                // Зуммируем к центроиду
+            val polygonData = polygonsList.find { it.id == polygonId }
+            if (polygonData != null) {
+                val centroid = polygonData.centroid
+
+
                 mapView.getMapboxMap().setCamera(
                     CameraOptions.Builder()
                         .center(centroid)
-                        .zoom(16.0) // Уровень зума, можете изменить по необходимости
+                        .zoom(16.0)
                         .build()
                 )
             } else {
@@ -204,8 +190,9 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() &&
-            grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            initLocationComponent()
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
+        ) {
+            MapUtils.initLocationComponent(mapView)
         } else {
             Toast.makeText(this, "Location permission not granted", Toast.LENGTH_SHORT).show()
         }
