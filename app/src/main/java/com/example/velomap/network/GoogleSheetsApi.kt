@@ -1,5 +1,6 @@
-package com.example.velomap
+package com.example.velomap.network
 
+import com.example.velomap.data.SheetResponse
 import com.google.api.services.sheets.v4.model.ValueRange
 import retrofit2.Response
 import retrofit2.http.Body
@@ -7,6 +8,7 @@ import retrofit2.http.GET
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
+
 
 interface GoogleSheetsApi {
     @GET("v4/spreadsheets/{spreadsheetId}/values/{range}")
