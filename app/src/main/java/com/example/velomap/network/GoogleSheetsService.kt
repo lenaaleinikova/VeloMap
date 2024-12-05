@@ -1,8 +1,11 @@
 package com.example.velomap.network
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
+import androidx.core.app.ActivityCompat.startActivityForResult
 import com.example.velomap.data.PolygonInfo
+import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
@@ -23,20 +26,22 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
         .build()
 
     private val googleSheetsApi: GoogleSheetsApi = retrofit.create(GoogleSheetsApi::class.java)
-    private val sheetsService: Sheets by lazy { getSheetsService(context) }
+//    private val sheetsService1: Sheets by lazy { getSheetsService(context) }
 
-    private fun getSheetsService(context: Context): Sheets {
+    private fun getSheetsService(context: Context, accountName: String): Sheets {
         val credentials = GoogleAccountCredential.usingOAuth2(
             context,
-            listOf(SheetsScopes.SPREADSHEETS)
-        )
+            listOf(SheetsScopes.SPREADSHEETS, SheetsScopes.DRIVE)
+        ).apply {
+            selectedAccountName = accountName // Убедитесь, что эта строка корректно выполняется.
+        }
 
         return Sheets.Builder(
             NetHttpTransport(),
             GsonFactory.getDefaultInstance(),
             credentials
         )
-            .setApplicationName("Your App Name")
+            .setApplicationName("VeloMap")
             .build()
     }
 
@@ -100,45 +105,37 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
 
     }
 
-    suspend fun testUpdateCell() {
-        val spreadsheetId = "1GuzQu1G3MXVc9K9WQu3qXG2W6gys8XP6mkWgeMRGP18"
-        val cellRange = "Вело-опер 2024 III часть!I25"
-        val body = ValueRange().setValues(listOf(listOf("тестовое значение")))
+    suspend fun testUpdateCell(
+        googleAccountCredential: GoogleAccountCredential,
+        context: Context
+    ): Intent? {
 
         try {
             withContext(Dispatchers.IO) {
-//
-//                val response =
-//                    googleSheetsApi.updateSheetValue(spreadsheetId, cellRange, body, apiKey)
-//                Log.d("testUpdate", "Ответ от API: $response")
-//                if (response.isSuccessful) Log.d(
-//                    "testUpdate",
-//                    "Запись успешно обновлена."
-//                ) else {
-//                    Log.d("testUpdate", response.code().toString())
-//                }
-
-
+                val spreadsheetId = "1GuzQu1G3MXVc9K9WQu3qXG2W6gys8XP6mkWgeMRGP18"
+                val cellRange = "Вело-опер 2024 III часть!I25"
+                val body = ValueRange().setValues(listOf(listOf("тестовое значение")))
+                Log.d(
+                    "testUpdate",
+                    "Обновлено ${googleAccountCredential.selectedAccountName} ячеек."
+                )
+                val sheetsService =
+                    getSheetsService(context, googleAccountCredential.selectedAccountName)
+                Log.d("testUpdate", "Обновлено ${sheetsService} ячеек.")
                 val updateRequest =
                     sheetsService.spreadsheets().values().update(spreadsheetId, cellRange, body)
                 updateRequest.setValueInputOption("RAW")
+
+
                 val response2 = updateRequest.execute()
-                Log.d("testUpdate", "Обновлено ${response2.updatedCells} ячеек.")
+                Log.d("testUpdate", "Обновлено ${response2} ячеек.")
+
             }
-        } catch (e: Exception) {
+            return null
+        } catch (e: UserRecoverableAuthException) {
             Log.e("testUpdate", "Ошибка обновления записи", e)
+            return e.intent
         }
-    }
-
-    suspend fun chooseAccount(credential: GoogleAccountCredential) {
-
-        val sheetsService: Sheets = Sheets.Builder(
-            NetHttpTransport(),
-            GsonFactory.getDefaultInstance(),
-            credential
-        )
-            .setApplicationName("Your App Name")
-            .build()
     }
 
 

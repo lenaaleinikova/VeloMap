@@ -13,6 +13,8 @@ import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -33,6 +35,9 @@ import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListen
 import com.mapbox.maps.plugin.locationcomponent.location
 import kotlinx.coroutines.launch
 
+import android.Manifest
+
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mapView: MapView
@@ -48,9 +53,6 @@ class MainActivity : AppCompatActivity() {
     private val REQUEST_ACCOUNT_PICKER = 1000
     private lateinit var googleAccountCredential: GoogleAccountCredential
 
-
-
-
     private val polygonInfoMap = mutableMapOf<String, PolygonInfo>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,13 +61,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         mapView = findViewById(R.id.mapView)
 
+
         googleAccountCredential = GoogleAccountCredential.usingOAuth2(
             this,
             listOf(SheetsScopes.SPREADSHEETS)
         )
-        if (googleAccountCredential.selectedAccountName == null) {
-            chooseAccount()
-        }
+//        if (googleAccountCredential.selectedAccountName == null) {
+//            chooseAccount()
+//        }
 
 
         val repository =
@@ -103,29 +106,6 @@ class MainActivity : AppCompatActivity() {
                 }
             })
         }
-    }
-
-    private fun chooseAccount() {
-        val intent = googleAccountCredential.newChooseAccountIntent()
-        startActivityForResult(intent, REQUEST_ACCOUNT_PICKER)
-    }
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_ACCOUNT_PICKER && resultCode == Activity.RESULT_OK && data != null) {
-            val accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
-            accountName?.let {
-                Log.d("testUpdate", "main $it")
-                googleAccountCredential.selectedAccountName = it
-                saveAccountNameToPreferences(it)
-
-                viewModel.setAccountName(it)
-            }
-        }
-    }
-
-    private fun saveAccountNameToPreferences(accountName: String) {
-        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        sharedPref.edit().putString("selectedAccount", accountName).apply()
     }
 
     private fun observeViewModel() {
@@ -235,8 +215,9 @@ class MainActivity : AppCompatActivity() {
         ) {
             MapUtils.initLocationComponent(mapView)
         } else {
-            Toast.makeText(this, "Location permission not granted", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Location permission not granted!!!", Toast.LENGTH_SHORT).show()
         }
+
     }
 
 
