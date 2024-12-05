@@ -18,6 +18,15 @@ class MainViewModel(private val repository: PolygonRepository) : ViewModel() {
     private val _polygonInfo = MutableLiveData<Result<List<PolygonInfo>>>()
     val polygonInfo: LiveData<Result<List<PolygonInfo>>> get() = _polygonInfo
 
+    private val _accountName = MutableLiveData<String>()
+    val accountName: LiveData<String> get() = _accountName
+
+
+
+    fun setAccountName(accountName: String) {
+        _accountName.value = accountName
+    }
+
     fun fetchStatuses() {
         viewModelScope.launch {
             try {

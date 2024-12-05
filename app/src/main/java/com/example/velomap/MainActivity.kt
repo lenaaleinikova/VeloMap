@@ -1,6 +1,10 @@
 package com.example.velomap
 
 
+import android.accounts.AccountManager
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -15,6 +19,8 @@ import androidx.lifecycle.lifecycleScope
 import com.example.velomap.data.PolygonData
 import com.example.velomap.data.PolygonInfo
 import com.example.velomap.network.GoogleSheetsService
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.services.sheets.v4.SheetsScopes
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 
@@ -39,6 +45,10 @@ class MainActivity : AppCompatActivity() {
     private val googleSheetsService =
         GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE", this)
     private val LOCATION_PERMISSION_REQUEST_CODE = 100
+    private val REQUEST_ACCOUNT_PICKER = 1000
+    private lateinit var googleAccountCredential: GoogleAccountCredential
+
+
 
 
     private val polygonInfoMap = mutableMapOf<String, PolygonInfo>()
@@ -48,6 +58,15 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         mapView = findViewById(R.id.mapView)
+
+        googleAccountCredential = GoogleAccountCredential.usingOAuth2(
+            this,
+            listOf(SheetsScopes.SPREADSHEETS)
+        )
+        if (googleAccountCredential.selectedAccountName == null) {
+            chooseAccount()
+        }
+
 
         val repository =
             PolygonRepository(GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE", this))
@@ -86,6 +105,28 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun chooseAccount() {
+        val intent = googleAccountCredential.newChooseAccountIntent()
+        startActivityForResult(intent, REQUEST_ACCOUNT_PICKER)
+    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_ACCOUNT_PICKER && resultCode == Activity.RESULT_OK && data != null) {
+            val accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
+            accountName?.let {
+                Log.d("testUpdate", "main $it")
+                googleAccountCredential.selectedAccountName = it
+                saveAccountNameToPreferences(it)
+
+                viewModel.setAccountName(it)
+            }
+        }
+    }
+
+    private fun saveAccountNameToPreferences(accountName: String) {
+        val sharedPref = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        sharedPref.edit().putString("selectedAccount", accountName).apply()
+    }
 
     private fun observeViewModel() {
         Log.d("Mainload", "observeViewModel")

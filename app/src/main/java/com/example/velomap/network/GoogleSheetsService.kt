@@ -105,31 +105,40 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
         val cellRange = "Вело-опер 2024 III часть!I25"
         val body = ValueRange().setValues(listOf(listOf("тестовое значение")))
 
-
-
         try {
             withContext(Dispatchers.IO) {
 //
-                val response =
-                    googleSheetsApi.updateSheetValue(spreadsheetId, cellRange, body, apiKey)
-                Log.d("testUpdate", "Ответ от API: $response")
-                if (response.isSuccessful) Log.d(
-                    "testUpdate",
-                    "Запись успешно обновлена."
-                ) else {
-                    Log.d("testUpdate", response.code().toString())
-                }
+//                val response =
+//                    googleSheetsApi.updateSheetValue(spreadsheetId, cellRange, body, apiKey)
+//                Log.d("testUpdate", "Ответ от API: $response")
+//                if (response.isSuccessful) Log.d(
+//                    "testUpdate",
+//                    "Запись успешно обновлена."
+//                ) else {
+//                    Log.d("testUpdate", response.code().toString())
+//                }
 
 
-//                val updateRequest =
-//                    sheetsService.spreadsheets().values().update(spreadsheetId, cellRange, body)
-//                updateRequest.setValueInputOption("RAW")
-//                val response2 = updateRequest.execute()
-//                Log.d("testUpdate", "Обновлено ${response2.updatedCells} ячеек.")
+                val updateRequest =
+                    sheetsService.spreadsheets().values().update(spreadsheetId, cellRange, body)
+                updateRequest.setValueInputOption("RAW")
+                val response2 = updateRequest.execute()
+                Log.d("testUpdate", "Обновлено ${response2.updatedCells} ячеек.")
             }
         } catch (e: Exception) {
             Log.e("testUpdate", "Ошибка обновления записи", e)
         }
+    }
+
+    suspend fun chooseAccount(credential: GoogleAccountCredential) {
+
+        val sheetsService: Sheets = Sheets.Builder(
+            NetHttpTransport(),
+            GsonFactory.getDefaultInstance(),
+            credential
+        )
+            .setApplicationName("Your App Name")
+            .build()
     }
 
 
