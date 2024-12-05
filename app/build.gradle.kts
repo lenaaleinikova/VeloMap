@@ -61,10 +61,12 @@ dependencies {
 //    implementation ("com.mapbox.mapboxsdk:mapbox-android-core:6.1.0")
 //    implementation("com.mapbox.maps:plugin-gestures:10.0.0")
 
-    implementation ("com.google.maps.android:android-maps-utils:2.3.0")
+    implementation (libs.android.maps.utils)
 
-    implementation ("com.google.api-client:google-api-client-android:1.33.0")
-//    implementation("com.google.apis:google-api-services-sheets:v4-rev614-1.25.0")
+    implementation (libs.api.client.google.api.client.android)
+    implementation (libs.play.services.auth)
+    implementation(libs.google.api.services.sheets)
+
     implementation(libs.google.api.client)
     implementation(libs.google.api.services.sheets)
     implementation(libs.google.api.client.gson)
