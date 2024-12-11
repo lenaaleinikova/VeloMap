@@ -36,7 +36,8 @@ import com.mapbox.maps.plugin.locationcomponent.location
 import kotlinx.coroutines.launch
 
 import android.Manifest
-
+import com.example.velomap.network.CustomTrustManager
+import com.example.velomap.network.GeoJsonLoader
 
 
 class MainActivity : AppCompatActivity() {
@@ -54,12 +55,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var googleAccountCredential: GoogleAccountCredential
 
     private val polygonInfoMap = mutableMapOf<String, PolygonInfo>()
+    private lateinit var geoJsonLoader: GeoJsonLoader
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         mapView = findViewById(R.id.mapView)
+
+        val customTrustManager = CustomTrustManager()
+        geoJsonLoader = GeoJsonLoader(this, customTrustManager)
 
 
         googleAccountCredential = GoogleAccountCredential.usingOAuth2(
@@ -113,16 +118,38 @@ class MainActivity : AppCompatActivity() {
         viewModel.polygonInfo.observe(this) { result ->
             Log.d("Mainload", "result ${result.toString()}")
             result.onSuccess { polygons ->
-                val geoJsonString =
-                    assets.open("polygons.geojson").bufferedReader().use { it.readText() }
-//                Log.d("Mainload", "2 $geoJsonString")
-                Log.d("Mainload", "polygons $polygons")
+                val geoJsonUrl =
+                    "https://geoserver.helgilab.ru/geoserver/SURV/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=SURV%3Avelo2024_3part_2&outputFormat=application%2Fjson"
+
                 lifecycleScope.launch {
-                    polygonsList = parseGeoJson(geoJsonString)
+                    try {
+                        // Передаем путь к сертификату
+//                        val certInputStream = assets.open("helgilab.crt")
+                        val certInputStream = resources.openRawResource(R.raw.helgilab)
+                        val certInputStream1 = resources.openRawResource(R.raw.helgilab)
+                        val certInputStream2 = resources.openRawResource(R.raw.helgilab)
+//                        geoJsonLoader.customTrustManager.createSslContextWithCustomTrustManager(
+//                            certInputStream
+//                        )
+                        val sslContext = geoJsonLoader.customTrustManager.createSslContextWithCustomTrustManager(certInputStream1)
+                        val trustManager = geoJsonLoader.customTrustManager.getCustomTrustManager(certInputStream2)
+
+                        val geoJsonString = geoJsonLoader.fetchGeoJsonFromUrl(geoJsonUrl)
+                        Log.d("GeoJson", "geoJsonString $geoJsonString")
+
+                        if (geoJsonString != null) {
+                            val polygonsList = parseGeoJson(geoJsonString)
+                            Log.d("GeoJson", "polygons: $polygonsList")
+                            val layerIds = mapManager.loadStyle(polygons, geoJsonString)
+                            Log.d("GeoJson", "layerIds $layerIds")
+                            setupMapInteractions(layerIds, polygons)
+                        } else {
+                            Log.e("GeoJsonError", "GeoJSON data is null")
+                        }
+                    } catch (e: Exception) {
+                        Log.e("GeoJsonError", "Error loading GeoJSON data", e)
+                    }
                 }
-                val layerIds = mapManager.loadStyle(polygons, geoJsonString)
-                Log.d("Mainload", "layerIds $layerIds")
-                setupMapInteractions(layerIds, polygons)
             }
             result.onFailure {
                 Toast.makeText(this, "Failed to load polygon info", Toast.LENGTH_SHORT).show()

@@ -71,17 +71,20 @@ dependencies {
     implementation(libs.google.api.services.sheets)
     implementation(libs.google.api.client.gson)
     implementation(libs.jackson.databind)
+    implementation ("com.google.oauth-client:google-oauth-client-jetty:1.34.1")
+    implementation ("com.google.apis:google-api-services-drive:v3-rev20220815-2.0.0")
 
 
 
 
-    implementation (libs.google.api.client.gson)
+//    implementation (libs.google.api.client.gson)
     implementation (libs.kotlinx.coroutines.core)
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
 
     implementation (libs.retrofit)
     implementation (libs.converter.gson)
-
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
 
 }
