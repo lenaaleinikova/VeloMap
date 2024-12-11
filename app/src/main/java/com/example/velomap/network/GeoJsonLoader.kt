@@ -10,18 +10,26 @@ import okhttp3.Request
 import okhttp3.Response
 import java.io.FileInputStream
 import java.io.InputStream
+import javax.net.ssl.SSLContext
+import javax.net.ssl.X509TrustManager
 
-class GeoJsonLoader(private val context: Context, val customTrustManager: CustomTrustManager) {
+class GeoJsonLoader(
+//    private val context: Context,
+    val customTrustManager: CustomTrustManager,
+    private val sslContext: SSLContext,
+    private val trustManager: X509TrustManager
+) {
 
     suspend fun fetchGeoJsonFromUrl(url: String): String? = withContext(Dispatchers.IO) {
 
-        val certInputStream: InputStream = context.resources.openRawResource(R.raw.helgilab)
-        val sslContext = customTrustManager.createSslContextWithCustomTrustManager(certInputStream)
+//        val certInputStream: InputStream = context.resources.openRawResource(R.raw.helgilab)
+//        val sslContext = customTrustManager.createSslContextWithCustomTrustManager(certInputStream)
 
         val client = OkHttpClient.Builder()
             .sslSocketFactory(
                 sslContext.socketFactory,
-                customTrustManager.getCustomTrustManager(certInputStream)
+//                customTrustManager.getCustomTrustManager(certInputStream),
+                trustManager
             )
             .build()
 

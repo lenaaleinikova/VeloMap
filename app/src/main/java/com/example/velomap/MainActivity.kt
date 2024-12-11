@@ -64,7 +64,16 @@ class MainActivity : AppCompatActivity() {
         mapView = findViewById(R.id.mapView)
 
         val customTrustManager = CustomTrustManager()
-        geoJsonLoader = GeoJsonLoader(this, customTrustManager)
+
+        val sslContext = resources.openRawResource(R.raw.helgilab).use { certInputStream ->
+            customTrustManager.createSslContextWithCustomTrustManager(certInputStream)
+        }
+
+        val trustManager = resources.openRawResource(R.raw.helgilab).use { certInputStream ->
+            customTrustManager.getCustomTrustManager(certInputStream)
+        }
+
+        geoJsonLoader = GeoJsonLoader(customTrustManager, sslContext, trustManager)
 
 
         googleAccountCredential = GoogleAccountCredential.usingOAuth2(
@@ -123,16 +132,6 @@ class MainActivity : AppCompatActivity() {
 
                 lifecycleScope.launch {
                     try {
-                        // Передаем путь к сертификату
-//                        val certInputStream = assets.open("helgilab.crt")
-                        val certInputStream = resources.openRawResource(R.raw.helgilab)
-                        val certInputStream1 = resources.openRawResource(R.raw.helgilab)
-                        val certInputStream2 = resources.openRawResource(R.raw.helgilab)
-//                        geoJsonLoader.customTrustManager.createSslContextWithCustomTrustManager(
-//                            certInputStream
-//                        )
-                        val sslContext = geoJsonLoader.customTrustManager.createSslContextWithCustomTrustManager(certInputStream1)
-                        val trustManager = geoJsonLoader.customTrustManager.getCustomTrustManager(certInputStream2)
 
                         val geoJsonString = geoJsonLoader.fetchGeoJsonFromUrl(geoJsonUrl)
                         Log.d("GeoJson", "geoJsonString $geoJsonString")
