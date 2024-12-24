@@ -1,10 +1,6 @@
 package com.example.velomap
 
 
-import android.accounts.AccountManager
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -13,8 +9,6 @@ import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -35,7 +29,8 @@ import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListen
 import com.mapbox.maps.plugin.locationcomponent.location
 import kotlinx.coroutines.launch
 
-import android.Manifest
+import com.example.velomap.map.MapManager
+import com.example.velomap.map.MapUtils
 import com.example.velomap.network.CustomTrustManager
 import com.example.velomap.network.GeoJsonLoader
 
@@ -209,23 +204,29 @@ class MainActivity : AppCompatActivity() {
         searchButton.setOnClickListener {
             val polygonId = searchInput.text.toString().trim()
             Log.d("Search", polygonId)
-            Log.d("Search", polygonsList.toString())
+//            Log.d("Search", polygonsList.toString())
 
 
-            val polygonData = polygonsList.find { it.id == polygonId }
-            if (polygonData != null) {
-                val centroid = polygonData.centroid
 
+            if (polygonsList.isNotEmpty()) {
+                val polygonData = polygonsList.find { it.id == polygonId }
+                if (polygonData != null) {
+                    val centroid = polygonData.centroid
 
-                mapView.getMapboxMap().setCamera(
-                    CameraOptions.Builder()
-                        .center(centroid)
-                        .zoom(16.0)
-                        .build()
-                )
+                    mapView.getMapboxMap().setCamera(
+                        CameraOptions.Builder()
+                            .center(centroid)
+                            .zoom(16.0)
+                            .build()
+                    )
+                } else {
+                    Toast.makeText(this, "Полигон с ID $polygonId не найден", Toast.LENGTH_SHORT)
+                        .show()
+                }
             } else {
-                Toast.makeText(this, "Полигон с ID $polygonId не найден", Toast.LENGTH_SHORT).show()
+                Log.d("Search", "polygonsList empty")
             }
+
         }
     }
 

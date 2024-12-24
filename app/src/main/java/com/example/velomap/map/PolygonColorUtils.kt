@@ -1,4 +1,4 @@
-package com.example.velomap
+package com.example.velomap.map
 
 
 import com.example.velomap.data.PolygonInfo

@@ -1,4 +1,4 @@
-package com.example.velomap
+package com.example.velomap.map
 
 import androidx.appcompat.app.AppCompatActivity
 import com.example.velomap.data.PolygonInfo
@@ -14,7 +14,11 @@ class MapManager(private val mapView: MapView, private val activity: AppCompatAc
         polygonInfo: List<PolygonInfo>,
         geoJsonString: String
     ): List<String> {
-        val layerIds = PolygonColorUtils.applyPolygonColors(geoJsonString, polygonInfo, mapView.getMapboxMap().getStyle()!!)
+        val layerIds = PolygonColorUtils.applyPolygonColors(
+            geoJsonString,
+            polygonInfo,
+            mapView.getMapboxMap().getStyle()!!
+        )
         return layerIds
     }
 

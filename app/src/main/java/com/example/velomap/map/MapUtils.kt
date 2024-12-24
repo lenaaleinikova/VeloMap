@@ -1,9 +1,10 @@
-package com.example.velomap
+package com.example.velomap.map
 
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.velomap.R
 import com.mapbox.maps.ImageHolder
 import com.mapbox.maps.MapView
 import com.mapbox.maps.plugin.LocationPuck2D
