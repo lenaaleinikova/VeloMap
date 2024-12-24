@@ -9,30 +9,26 @@ import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.velomap.data.PolygonData
 import com.example.velomap.data.PolygonInfo
+import com.example.velomap.map.MapManager
+import com.example.velomap.map.MapUtils
+import com.example.velomap.network.CustomTrustManager
+import com.example.velomap.network.GeoJsonLoader
 import com.example.velomap.network.GoogleSheetsService
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.services.sheets.v4.SheetsScopes
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
-
 import com.mapbox.maps.MapView
 import com.mapbox.maps.RenderedQueryGeometry
 import com.mapbox.maps.RenderedQueryOptions
-
 import com.mapbox.maps.plugin.gestures.addOnMapClickListener
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListener
 import com.mapbox.maps.plugin.locationcomponent.location
 import kotlinx.coroutines.launch
-
-import com.example.velomap.map.MapManager
-import com.example.velomap.map.MapUtils
-import com.example.velomap.network.CustomTrustManager
-import com.example.velomap.network.GeoJsonLoader
 
 
 class MainActivity : AppCompatActivity() {
@@ -57,6 +53,10 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         mapView = findViewById(R.id.mapView)
+        val searchButton = findViewById<ImageButton>(R.id.search_button)
+        searchButton.setOnClickListener {
+            Log.d("Search", "Button clicked1")
+        }
 
         val customTrustManager = CustomTrustManager()
 
@@ -132,9 +132,9 @@ class MainActivity : AppCompatActivity() {
                         Log.d("GeoJson", "geoJsonString $geoJsonString")
 
                         if (geoJsonString != null) {
-                            val polygonsList = parseGeoJson(geoJsonString)
+                            polygonsList = parseGeoJson(geoJsonString)
                             Log.d("GeoJson", "polygons: $polygonsList")
-                            val layerIds = mapManager.loadStyle(polygons, geoJsonString)
+                            layerIds = mapManager.loadStyle(polygons, geoJsonString)
                             Log.d("GeoJson", "layerIds $layerIds")
                             setupMapInteractions(layerIds, polygons)
                         } else {
@@ -157,10 +157,7 @@ class MainActivity : AppCompatActivity() {
 
             val screenPoint = mapView.getMapboxMap().pixelForCoordinate(point)
             val queryGeometry = RenderedQueryGeometry(screenPoint)
-
-
             val queryOptions = RenderedQueryOptions(layerIds, null)
-
 
             mapView.getMapboxMap().queryRenderedFeatures(
                 queryGeometry, queryOptions
@@ -201,32 +198,39 @@ class MainActivity : AppCompatActivity() {
         val searchButton = findViewById<ImageButton>(R.id.search_button)
         val searchInput = findViewById<EditText>(R.id.polygon_id_input)
 
-        searchButton.setOnClickListener {
-            val polygonId = searchInput.text.toString().trim()
-            Log.d("Search", polygonId)
-//            Log.d("Search", polygonsList.toString())
+        searchButton.post {
+            searchButton.setOnClickListener {
+                Log.d("Search", "Button clicked")
+                val polygonId = searchInput.text.toString().trim()
+                Log.d("Search", polygonId)
+                try {
+                    if (polygonsList.isNotEmpty()) {
+                        val polygonData = polygonsList.find { it.id == polygonId }
+                        if (polygonData != null) {
+                            val centroid = polygonData.centroid
 
-
-
-            if (polygonsList.isNotEmpty()) {
-                val polygonData = polygonsList.find { it.id == polygonId }
-                if (polygonData != null) {
-                    val centroid = polygonData.centroid
-
-                    mapView.getMapboxMap().setCamera(
-                        CameraOptions.Builder()
-                            .center(centroid)
-                            .zoom(16.0)
-                            .build()
-                    )
-                } else {
-                    Toast.makeText(this, "Полигон с ID $polygonId не найден", Toast.LENGTH_SHORT)
-                        .show()
+                            mapView.getMapboxMap().setCamera(
+                                CameraOptions.Builder()
+                                    .center(centroid)
+                                    .zoom(16.0)
+                                    .build()
+                            )
+                        } else {
+                            Toast.makeText(
+                                this,
+                                "Полигон с ID $polygonId не найден",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        }
+                    } else {
+                        Log.d("Search", "polygonsList empty")
+                    }
+                } catch (e: Exception) {
+                    Log.d("Search", "Exception: $e")
                 }
-            } else {
-                Log.d("Search", "polygonsList empty")
+                searchInput.setText("")
             }
-
         }
     }
 
