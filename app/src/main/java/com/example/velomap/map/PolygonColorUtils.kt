@@ -1,4 +1,4 @@
-package com.example.velomap
+package com.example.velomap.map
 
 
 import com.example.velomap.data.PolygonInfo
@@ -39,6 +39,7 @@ object PolygonColorUtils {
                 "1" -> "#00FF00"
                 "Принято" -> "#0000FF"
                 "не снято" -> "#FF0000"
+                "ЛИШНЕЕ" -> "#f1c0ff"
                 else -> "#800080"
             }
 

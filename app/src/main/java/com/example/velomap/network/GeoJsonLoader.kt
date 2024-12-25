@@ -28,7 +28,7 @@ class GeoJsonLoader(
         val client = OkHttpClient.Builder()
             .sslSocketFactory(
                 sslContext.socketFactory,
-//                customTrustManager.getCustomTrustManager(certInputStream),
+//                customTrustManager.getCustomTrustManager(certInputStream),  openssl s_client -connect geoserver.helgilab.ru:443 -CAfile C:/Users/elenaa/IdeaProjects/kotlin/VeloMap/app/src/main/res/raw/helgilab4.pem
                 trustManager
             )
             .build()
