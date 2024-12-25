@@ -1,8 +1,7 @@
-package com.example.velomap
+package com.example.velomap.network
 
 import android.content.Context
 import androidx.fragment.app.Fragment
-import com.example.velomap.network.GoogleSheetsService
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.services.sheets.v4.SheetsScopes
 

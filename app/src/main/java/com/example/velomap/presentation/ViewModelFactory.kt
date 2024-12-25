@@ -1,7 +1,8 @@
-package com.example.velomap
+package com.example.velomap.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.velomap.data.repository.PolygonRepository
 
 class ViewModelFactory(
     private val repository: PolygonRepository

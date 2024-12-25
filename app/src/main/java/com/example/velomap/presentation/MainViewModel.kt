@@ -1,14 +1,12 @@
-package com.example.velomap
+package com.example.velomap.presentation
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.velomap.data.repository.PolygonRepository
 import com.example.velomap.data.PolygonInfo
-import com.example.velomap.network.GoogleSheetsService
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainViewModel(private val repository: PolygonRepository) : ViewModel() {
 

@@ -1,4 +1,4 @@
-package com.example.velomap
+package com.example.velomap.map
 
 import android.util.Log
 import com.example.velomap.data.PolygonData
