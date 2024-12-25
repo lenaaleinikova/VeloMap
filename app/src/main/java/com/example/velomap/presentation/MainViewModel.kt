@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.velomap.data.repository.PolygonRepository
-import com.example.velomap.domen.PolygonInfo
+import com.example.velomap.domain.PolygonInfo
 import kotlinx.coroutines.launch
 
 class MainViewModel(private val repository: PolygonRepository) : ViewModel() {

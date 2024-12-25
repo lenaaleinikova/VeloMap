@@ -3,7 +3,7 @@ package com.example.velomap.data.network
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.example.velomap.domen.PolygonInfo
+import com.example.velomap.domain.PolygonInfo
 import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.javanet.NetHttpTransport

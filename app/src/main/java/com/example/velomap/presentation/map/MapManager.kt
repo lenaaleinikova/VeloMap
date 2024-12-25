@@ -1,7 +1,7 @@
 package com.example.velomap.presentation.map
 
 import androidx.appcompat.app.AppCompatActivity
-import com.example.velomap.domen.PolygonInfo
+import com.example.velomap.domain.PolygonInfo
 import com.mapbox.maps.MapView
 import com.mapbox.maps.plugin.LocationPuck2D
 import com.mapbox.geojson.Point

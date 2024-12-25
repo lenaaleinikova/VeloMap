@@ -1,6 +1,6 @@
 package com.example.velomap.data.network
 
-import com.example.velomap.domen.SheetResponse
+import com.example.velomap.domain.SheetResponse
 import com.google.api.services.sheets.v4.model.ValueRange
 import retrofit2.Response
 import retrofit2.http.Body

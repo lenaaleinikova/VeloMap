@@ -5,7 +5,7 @@ import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.velomap.R
-import com.example.velomap.domen.PolygonData
+import com.example.velomap.domain.PolygonData
 
 class SearchHandler(
     private val activity: AppCompatActivity,

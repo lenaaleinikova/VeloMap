@@ -3,7 +3,7 @@ package com.example.velomap.presentation
 import android.view.View
 import android.widget.TextView
 import com.example.velomap.R
-import com.example.velomap.domen.PolygonInfo
+import com.example.velomap.domain.PolygonInfo
 
 class PolygonInfoViewBinder(private val view: View) {
     fun bind(polygonInfo: PolygonInfo) {

@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.velomap.R
-import com.example.velomap.domen.PolygonData
+import com.example.velomap.domain.PolygonData
 import com.example.velomap.data.repository.PolygonRepository
 import com.example.velomap.data.parseGeoJson
 import com.example.velomap.data.network.GeoJsonManager

@@ -1,4 +1,4 @@
-package com.example.velomap.domen
+package com.example.velomap.domain
 
 data class SheetResponse(
     val range: String,
