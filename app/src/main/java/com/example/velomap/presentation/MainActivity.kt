@@ -11,16 +11,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.example.velomap.network.GeoJsonManager
-import com.example.velomap.data.repository.PolygonRepository
 import com.example.velomap.R
-import com.example.velomap.data.PolygonData
-import com.example.velomap.data.PolygonInfo
-import com.example.velomap.map.MapManager
-import com.example.velomap.map.MapUtils
-import com.example.velomap.network.GeoJsonLoader
-import com.example.velomap.network.GoogleSheetsService
-import com.example.velomap.map.parseGeoJson
+import com.example.velomap.domen.PolygonData
+import com.example.velomap.data.repository.PolygonRepository
+import com.example.velomap.data.parseGeoJson
+import com.example.velomap.data.network.GeoJsonManager
+import com.example.velomap.data.network.GoogleSheetsService
+import com.example.velomap.presentation.map.MapInteractionHandler
+import com.example.velomap.presentation.map.MapManager
+import com.example.velomap.presentation.map.MapUtils
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.services.sheets.v4.SheetsScopes
 import com.mapbox.geojson.Point
@@ -40,14 +39,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mapManager: MapManager
     private lateinit var searchHandler: SearchHandler
 
-    private val googleSheetsService =
-        GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE", this)
     private val LOCATION_PERMISSION_REQUEST_CODE = 100
-    private val REQUEST_ACCOUNT_PICKER = 1000
     private lateinit var googleAccountCredential: GoogleAccountCredential
 
-    private val polygonInfoMap = mutableMapOf<String, PolygonInfo>()
-    private lateinit var geoJsonLoader: GeoJsonLoader
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,12 +54,10 @@ class MainActivity : AppCompatActivity() {
             Log.d("Search", "Button clicked1")
         }
 
-
         googleAccountCredential = GoogleAccountCredential.usingOAuth2(
             this,
             listOf(SheetsScopes.SPREADSHEETS)
         )
-
 
         val repository =
             PolygonRepository(GoogleSheetsService("AIzaSyBW5UaZZJgkHLS5WGvr3R6kUsy4vea3xcE", this))
@@ -79,10 +71,6 @@ class MainActivity : AppCompatActivity() {
         observeViewModel(this)
         viewModel.fetchPolygonInfo()
 
-
-//        findViewById<ImageButton>(R.id.search_button).setOnClickListener {
-//            setupSearchButton()
-//        }
 
         MapUtils.enableLocationComponent(this, mapView)
 
@@ -123,7 +111,6 @@ class MainActivity : AppCompatActivity() {
                             layerIds = mapManager.loadStyle(polygons, geoJsonString)
                             Log.d("GeoJson", "layerIds $layerIds")
                             searchHandler.setPolygons(polygonsList)
-//                            setupMapInteractions(layerIds, polygons)
                             MapInteractionHandler(mapView, layerIds, polygons) { polygonInfo ->
                                 val dialog = PolygonInfoDialogFragment.newInstance(polygonInfo)
                                 dialog.show(supportFragmentManager, "PolygonInfoDialog")
@@ -142,46 +129,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-//    private fun setupMapInteractions(layerIds: List<String>, polygons: List<PolygonInfo>) {
-//        mapView.getMapboxMap().addOnMapClickListener { point ->
-//            val screenPoint = mapView.getMapboxMap().pixelForCoordinate(point)
-//            val queryGeometry = RenderedQueryGeometry(screenPoint)
-//            val queryOptions = RenderedQueryOptions(layerIds, null)
-//
-//            mapView.getMapboxMap().queryRenderedFeatures(
-//                queryGeometry, queryOptions
-//            ) { features ->
-//                if (features.value?.isNotEmpty() == true) {
-//
-//                    val queriedFeature = features.value?.firstOrNull()
-//                    queriedFeature?.let {
-//
-//                        val properties = it.queriedFeature.feature.properties()
-//                        val iid = properties?.get("iid")
-//                            ?.asString
-//                            ?.replace("\"", "")
-//                            ?.trim() ?: "Неизвестный"
-//
-//                        val polygonInfo = polygons.find { polygon -> polygon.id == iid }
-//                        if (polygonInfo != null) {
-//                            val dialog = com.example.velomap.presentation.PolygonInfoDialogFragment.newInstance(polygonInfo)
-//                            dialog.show(supportFragmentManager, "PolygonInfoDialog")
-//                        } else {
-//                            Toast.makeText(
-//                                this,
-//                                "Информация о полигоне не найдена",
-//                                Toast.LENGTH_SHORT
-//                            ).show()
-//                        }
-//                    }
-//                } else {
-//                    Toast.makeText(this, "Полигон не найден", Toast.LENGTH_SHORT).show()
-//                }
-//            }
-//            true
-//        }
-//    }
-
     private fun onPolygonFound(polygon: PolygonData) {
         mapView.getMapboxMap().setCamera(
             CameraOptions.Builder()
@@ -190,48 +137,6 @@ class MainActivity : AppCompatActivity() {
                 .build()
         )
     }
-
-
-//    private fun setupSearchButton() {
-//        val searchButton = findViewById<ImageButton>(R.id.search_button)
-//        val searchInput = findViewById<EditText>(R.id.polygon_id_input)
-//
-//        searchButton.post {
-//            searchButton.setOnClickListener {
-//                Log.d("Search", "Button clicked")
-//                val polygonId = searchInput.text.toString().trim()
-//                Log.d("Search", polygonId)
-//                try {
-//                    if (polygonsList.isNotEmpty()) {
-//                        val polygonData = polygonsList.find { it.id == polygonId }
-//                        if (polygonData != null) {
-//                            val centroid = polygonData.centroid
-//
-//                            mapView.getMapboxMap().setCamera(
-//                                CameraOptions.Builder()
-//                                    .center(centroid)
-//                                    .zoom(16.0)
-//                                    .build()
-//                            )
-//                        } else {
-//                            Toast.makeText(
-//                                this,
-//                                "Полигон с ID $polygonId не найден",
-//                                Toast.LENGTH_SHORT
-//                            )
-//                                .show()
-//                        }
-//                    } else {
-//                        Log.d("Search", "polygonsList empty")
-//                    }
-//                } catch (e: Exception) {
-//                    Log.d("Search", "Exception: $e")
-//                }
-//                searchInput.setText("")
-//            }
-//        }
-//    }
-
 
     override fun onRequestPermissionsResult(
         requestCode: Int,

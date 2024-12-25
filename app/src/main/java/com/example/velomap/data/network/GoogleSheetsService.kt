@@ -1,21 +1,20 @@
-package com.example.velomap.network
+package com.example.velomap.data.network
 
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.core.app.ActivityCompat.startActivityForResult
-import com.example.velomap.data.PolygonInfo
+import com.example.velomap.domen.PolygonInfo
 import com.google.android.gms.auth.UserRecoverableAuthException
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import com.google.api.services.sheets.v4.model.ValueRange
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
 class GoogleSheetsService(private val apiKey: String, context: Context) {
@@ -26,14 +25,13 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
         .build()
 
     private val googleSheetsApi: GoogleSheetsApi = retrofit.create(GoogleSheetsApi::class.java)
-//    private val sheetsService1: Sheets by lazy { getSheetsService(context) }
 
     private fun getSheetsService(context: Context, accountName: String): Sheets {
         val credentials = GoogleAccountCredential.usingOAuth2(
             context,
             listOf(SheetsScopes.SPREADSHEETS, SheetsScopes.DRIVE)
         ).apply {
-            selectedAccountName = accountName // Убедитесь, что эта строка корректно выполняется.
+            selectedAccountName = accountName
         }
 
         return Sheets.Builder(
@@ -51,8 +49,7 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
             "Вело-опер 2024 III часть!D2:I", // Диапазон ячеек со столбцами "16_id3" и "1_Статусы / 1=снято_"
             apiKey
         )
-        Log.d("GeoJson", "response" + response.toString())
-
+        Log.d("GeoJson", "response$response")
         return if (response.isSuccessful) {
             response.body()?.values?.map { it[0] to it[5] } ?: emptyList()
         } else {
@@ -99,7 +96,6 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
         val cellRange = "Вело-опер 2024 III часть!I${rowIndex + 2}"
         Log.d("testUpdate", cellRange)
         val body = ValueRange().setValues(listOf(listOf(newStatus)))
-//        Log.d("PolygonInfoDialog", cellRange)
         googleSheetsApi.updateSheetValue(spreadsheetId, cellRange, body, apiKey)
 
 
@@ -137,6 +133,4 @@ class GoogleSheetsService(private val apiKey: String, context: Context) {
             return e.intent
         }
     }
-
-
 }

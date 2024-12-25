@@ -1,7 +1,7 @@
-package com.example.velomap.map
+package com.example.velomap.presentation.map
 
 
-import com.example.velomap.data.PolygonInfo
+import com.example.velomap.domen.PolygonInfo
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.eq
 import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.get

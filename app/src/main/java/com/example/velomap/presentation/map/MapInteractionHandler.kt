@@ -1,7 +1,7 @@
-package com.example.velomap.presentation
+package com.example.velomap.presentation.map
 
 import android.widget.Toast
-import com.example.velomap.data.PolygonInfo
+import com.example.velomap.domen.PolygonInfo
 import com.mapbox.maps.MapView
 import com.mapbox.maps.RenderedQueryGeometry
 import com.mapbox.maps.RenderedQueryOptions

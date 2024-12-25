@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.velomap.data.repository.PolygonRepository
-import com.example.velomap.data.PolygonInfo
+import com.example.velomap.domen.PolygonInfo
 import kotlinx.coroutines.launch
 
 class MainViewModel(private val repository: PolygonRepository) : ViewModel() {
@@ -16,14 +16,6 @@ class MainViewModel(private val repository: PolygonRepository) : ViewModel() {
     private val _polygonInfo = MutableLiveData<Result<List<PolygonInfo>>>()
     val polygonInfo: LiveData<Result<List<PolygonInfo>>> get() = _polygonInfo
 
-    private val _accountName = MutableLiveData<String>()
-    val accountName: LiveData<String> get() = _accountName
-
-
-
-    fun setAccountName(accountName: String) {
-        _accountName.value = accountName
-    }
 
     fun fetchStatuses() {
         viewModelScope.launch {

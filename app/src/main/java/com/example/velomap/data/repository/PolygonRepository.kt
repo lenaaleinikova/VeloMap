@@ -1,8 +1,8 @@
 package com.example.velomap.data.repository
 
 import android.util.Log
-import com.example.velomap.data.PolygonInfo
-import com.example.velomap.network.GoogleSheetsService
+import com.example.velomap.domen.PolygonInfo
+import com.example.velomap.data.network.GoogleSheetsService
 
 class PolygonRepository(private val googleSheetsService: GoogleSheetsService) {
 

@@ -1,4 +1,4 @@
-package com.example.velomap.network
+package com.example.velomap.data.network
 
 import android.content.Context
 import android.util.Log

@@ -1,4 +1,4 @@
-package com.example.velomap.network
+package com.example.velomap.data.network
 
 import java.io.InputStream
 import java.security.KeyStore

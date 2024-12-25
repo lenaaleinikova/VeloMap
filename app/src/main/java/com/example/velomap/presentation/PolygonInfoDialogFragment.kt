@@ -18,11 +18,11 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.example.velomap.network.GoogleSheetsManager
-import com.example.velomap.data.repository.PolygonRepository
 import com.example.velomap.R
-import com.example.velomap.data.PolygonInfo
-import com.example.velomap.network.GoogleSheetsService
+import com.example.velomap.domen.PolygonInfo
+import com.example.velomap.data.repository.PolygonRepository
+import com.example.velomap.data.network.GoogleSheetsManager
+import com.example.velomap.data.network.GoogleSheetsService
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import kotlinx.coroutines.launch
 

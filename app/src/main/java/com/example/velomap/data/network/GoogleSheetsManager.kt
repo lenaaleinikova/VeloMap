@@ -1,4 +1,4 @@
-package com.example.velomap.network
+package com.example.velomap.data.network
 
 import android.content.Context
 import androidx.fragment.app.Fragment
@@ -31,14 +31,5 @@ class GoogleSheetsManager(
     fun getSavedAccount(): String? {
         val sharedPref = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
         return sharedPref.getString("accountName", null)
-    }
-
-    fun updateStatus(
-        polygonId: String,
-        newStatus: String,
-        onSuccess: () -> Unit,
-        onError: (Exception) -> Unit
-    ) {
-
     }
 }

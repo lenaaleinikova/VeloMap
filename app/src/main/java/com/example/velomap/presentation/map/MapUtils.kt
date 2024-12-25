@@ -1,4 +1,4 @@
-package com.example.velomap.map
+package com.example.velomap.presentation.map
 
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity

@@ -1,7 +1,7 @@
-package com.example.velomap.map
+package com.example.velomap.data
 
 import android.util.Log
-import com.example.velomap.data.PolygonData
+import com.example.velomap.domen.PolygonData
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.MultiPolygon
 import com.mapbox.geojson.Point
